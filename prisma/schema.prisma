@@ -1,0 +1,107 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id               Int            @id @default(autoincrement())
+  name             String
+  email            String         @unique
+  nickname         String?
+  profileImage     String?
+  oauthProvider    String
+  oauthToken       String
+  userCategory     String
+  employmentStatus String
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+  exams            Exam[]
+  quizResults      QuizResult[]
+  notifications    Notification[]
+}
+
+model Certification {
+  id                   Int            @id @default(autoincrement())
+  name                 String
+  category             String
+  eligibility          String?
+  subjects             String?
+  examFormat           String?
+  examDuration         String?
+  passingCriteria      String?
+  fee                  String?
+  announcementSchedule String?
+  schedules            Schedule[]
+  quizRanges           QuizRange[]
+  notifications        Notification[]
+}
+
+model Schedule {
+  id                Int           @id @default(autoincrement())
+  certification     Certification @relation(fields: [certificationId], references: [id])
+  certificationId   Int
+  examDate          DateTime
+  registrationStart DateTime
+  registrationEnd   DateTime
+}
+
+model Exam {
+  id        Int      @id @default(autoincrement())
+  user      User     @relation(fields: [userId], references: [id])
+  userId    Int
+  title     String
+  examDate  DateTime
+  examRange String
+  memo      String?
+  status    String
+}
+
+model Notification {
+  id              Int           @id @default(autoincrement())
+  user            User          @relation(fields: [userId], references: [id])
+  userId          Int
+  day             String
+  startTime       String
+  endTime         String
+  quizType        String
+  certification   Certification @relation(fields: [certificationId], references: [id])
+  certificationId Int
+}
+
+model QuizRange {
+  id              Int           @id @default(autoincrement())
+  certification   Certification @relation(fields: [certificationId], references: [id])
+  certificationId Int
+  rangeTitle      String
+  rangeDetails    String
+  quizResults     QuizResult[]
+}
+
+model QuizResult {
+  id          Int       @id @default(autoincrement())
+  user        User      @relation(fields: [userId], references: [id])
+  userId      Int
+  quizRange   QuizRange @relation(fields: [quizRangeId], references: [id])
+  quizRangeId Int
+  isCorrect   Boolean
+  createdAt   DateTime  @default(now())
+}
+
+model Session {
+  id        String   @id
+  sid       String   @unique
+  data      String   @db.VarChar(512)
+  expiresAt DateTime @map("expires_at")
+
+  @@map("session")
+}
