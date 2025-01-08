@@ -70,6 +70,7 @@ app.use(
 );
 
 app.get("/openapi.json", async (req, res, next) => {
+  // #swagger.ignore = true
   const options = {
     openapi: "3.0.0",
     disableLogs: true,
