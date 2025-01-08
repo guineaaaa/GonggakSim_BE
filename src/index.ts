@@ -70,7 +70,6 @@ app.use(
 );
 
 app.get("/openapi.json", async (req, res, next) => {
-  // #swagger.ignore = true
   const options = {
     openapi: "3.0.0",
     disableLogs: true,
@@ -140,9 +139,6 @@ app.get(
     res.redirect("/");
   }
 );
-
-// 회원가입 API
-
 
 
 // 전역 오류 처리 미들웨어
