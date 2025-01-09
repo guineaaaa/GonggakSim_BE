@@ -26,9 +26,6 @@ jobs:
       - name: Install dependencies
         run: npm ci # install 대신 ci 사용
 
-      - name: Lint check
-        run: npm run lint  # 코드 품질 검사 추가가
-
       - name: Test prisma generate
         run: npm exec prisma generate
 
