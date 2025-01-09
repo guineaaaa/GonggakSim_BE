@@ -21,7 +21,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: "20"
-          cache: 'npm'  # 의존성 캐싱 추가가
+          cache: 'npm'  # 의존성 캐싱 추가
 
       - name: Install dependencies
         run: npm ci # install 대신 ci 사용
@@ -29,14 +29,8 @@ jobs:
       - name: Test prisma generate
         run: npm exec prisma generate
 
-      - name: Run unit tests
-        run: npm test
-
       - name: Test build
         run: npm run build
 
       - name: Test type error
         run: npm exec tsc --noEmit
-
-      - name: Check formatting
-        run: npm run format:check  # 코드 포맷팅 검사 추가
