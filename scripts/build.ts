@@ -10,4 +10,8 @@ await esbuild.build({
     target: "node20",
     minify: true,
     keepNames: true,
+    external: [
+        'swagger-ui-express',
+        'swagger-autogen',
+    ]
 });

@@ -1,0 +1,84 @@
+# 워크플로 이름 지정
+name: deploy-main
+
+# 워크플로가 시작될 조건 지정
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest # 실행 환경 지정
+    # 실행 스텝 지정
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Check prisma has changes
+        uses: dorny/paths-filter@v3
+        id: paths-filter
+        with:
+          filters: |
+            prisma: ["prisma/**"]
+
+      - name: Configure SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "$EC2_SSH_KEY" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+
+          cat >>~/.ssh/config <<END
+          Host ggs
+            HostName $EC2_HOST
+            User $EC2_USER
+            IdentityFile ~/.ssh/id_rsa
+            StrictHostKeyChecking no
+          END
+        env:
+          EC2_USER: ubuntu
+          EC2_HOST: ${{ secrets.EC2_HOST }}
+          EC2_SSH_KEY: ${{ secrets.EC2_SSH_KEY }}
+
+      - name: Copy Workspace
+        run: |
+          ssh ggs 'sudo mkdir -p /opt/app'
+          ssh ggs 'sudo chown ubuntu:ubuntu /opt/app'
+          scp -r ./[!.]* ggs:/opt/app
+
+      - name: Install dependencies
+        run: |
+          ssh ggs 'cd /opt/app; npm install'
+          ssh ggs 'cd /opt/app; npm exec prisma generate'
+          ssh ggs 'cd /opt/app; npm run build'
+
+      - name: Apply prisma migrations
+        if: steps.paths-filter.outputs.prisma == 'true'
+        run: |
+          ssh ggs 'cd /opt/app; npm exec prisma migrate deploy'
+
+      - name: Copy systemd service file
+        run: |
+          ssh ggs '
+            echo "[Unit]
+            Description=Gongaksim Project
+            After=network.target
+
+            [Service]
+            User=${USER}
+            ExecStart=/usr/bin/npm run start --prefix /opt/app/
+            Restart=always
+
+            [Install]
+            WantedBy=multi-user.target" | sudo tee /etc/systemd/system/app.service
+          '
+
+      - name: Enable systemd service
+        run: |
+          ssh ggs 'sudo systemctl daemon-reload'
+          ssh ggs 'sudo systemctl enable app'
+
+      - name: Restart systemd service
+        run: |
+          ssh ggs 'sudo systemctl restart app'
