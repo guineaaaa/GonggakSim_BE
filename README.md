@@ -24,3 +24,8 @@
 - dev : 배포 전, 개발 중심으로 검증 위주의 브랜치
 - feature : 추가 기능을 개발 혹은 기존 기능 수정 브랜치
 - hotfix : main 브랜치에서 발생한 버그를 수정하는 브랜치
+
+## 🚨 github 주의사항
+- Pull request 생성 시, main인지 dev인지 반드시 확인
+- 기능 별로 branch 생성
+- commit 시, main 업데이트 확인(pull) 후에 push하기
