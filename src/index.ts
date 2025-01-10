@@ -5,7 +5,7 @@ import { PrismaSessionStore } from "@quixo3/prisma-session-store";
 import session from "express-session";
 import passport from "passport";
 
-import { googleStrategy } from "./auth.config.js";
+import { googleStrategy, kakaoStrategy } from "./auth.config.js";
 import { prisma } from "./db.config.js";
 
 //swagger
@@ -20,8 +20,9 @@ const port = process.env.PORT;
 
 // Passport 설정
 passport.use(googleStrategy);
+passport.use(kakaoStrategy);
 passport.serializeUser((user, done) => done(null, user));
-passport.deserializeUser<{ id: string; email: string; name: string }>(
+passport.deserializeUser<{ email: string; name: string }>(
   (user, done) => done(null, user)
 );
 
@@ -104,7 +105,7 @@ app.use(express.urlencoded({ extended: false })); // 단순 객체 문자열 형
 app.use(
   session({
     cookie: {
-      maxAge: 7 * 24 * 60 * 60 * 1000, // ms
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7일일
     },
     resave: false,
     saveUninitialized: false,
@@ -131,7 +132,7 @@ app.get('/', (req, res) => {
 // 인증 라우트
 app.get("/oauth2/login/google", passport.authenticate("google"));
 app.get(
-  "/oauth2/callback/google",
+  "/oauth2/login/google/callback",
   passport.authenticate("google", {
     failureRedirect: "/oauth2/login/google",
     failureMessage: true,
@@ -140,6 +141,20 @@ app.get(
     res.redirect("/");
   }
 );
+
+app.get("/oauth2/login/kakao", passport.authenticate("kakao"));
+app.get(
+  "/oauth2/login/kakao/callback",
+  passport.authenticate("kakao", {
+    failureRedirect: "/oauth2/login/kakao",
+    failureMessage: true,
+  }),
+  (req, res) => {
+    res.redirect("/");
+  }
+);
+
+
 
 
 // 전역 오류 처리 미들웨어

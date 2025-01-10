@@ -1,9 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -13,21 +7,13 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model User {
-  id               Int            @id @default(autoincrement())
-  name             String
-  email            String         @unique
-  nickname         String?
-  profileImage     String?
-  oauthProvider    String
-  oauthToken       String
-  userCategory     String
-  employmentStatus String
-  createdAt        DateTime       @default(now())
-  updatedAt        DateTime       @updatedAt
-  exams            Exam[]
-  quizResults      QuizResult[]
-  notifications    Notification[]
+model Session {
+  id        String   @id
+  sid       String   @unique
+  data      String   @db.VarChar(512)
+  expiresAt DateTime @map("expires_at")
+
+  @@map("session")
 }
 
 model Certification {
@@ -41,29 +27,22 @@ model Certification {
   passingCriteria      String?
   fee                  String?
   announcementSchedule String?
-  schedules            Schedule[]
+  notification         Notification[]
   quizRanges           QuizRange[]
-  notifications        Notification[]
-}
-
-model Schedule {
-  id                Int           @id @default(autoincrement())
-  certification     Certification @relation(fields: [certificationId], references: [id])
-  certificationId   Int
-  examDate          DateTime
-  registrationStart DateTime
-  registrationEnd   DateTime
+  schedules            Schedule[]
 }
 
 model Exam {
-  id        Int      @id @default(autoincrement())
-  user      User     @relation(fields: [userId], references: [id])
+  id        Int       @id @default(autoincrement())
+  user      User      @relation(fields: [userId], references: [id])
   userId    Int
   title     String
   examDate  DateTime
   examRange String
   memo      String?
   status    String
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
 }
 
 model Notification {
@@ -74,8 +53,10 @@ model Notification {
   startTime       String
   endTime         String
   quizType        String
-  certification   Certification @relation(fields: [certificationId], references: [id])
   certificationId Int
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  certification   Certification @relation(fields: [certificationId], references: [id])
 }
 
 model QuizRange {
@@ -95,13 +76,35 @@ model QuizResult {
   quizRangeId Int
   isCorrect   Boolean
   createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
 }
 
-model Session {
-  id        String   @id
-  sid       String   @unique
-  data      String   @db.VarChar(512)
-  expiresAt DateTime @map("expires_at")
+model Schedule {
+  id                Int           @id @default(autoincrement())
+  certification     Certification @relation(fields: [certificationId], references: [id])
+  certificationId   Int
+  examDate          DateTime
+  registrationStart DateTime
+  registrationEnd   DateTime
+}
 
-  @@map("session")
+model User {
+  id                Int            @id @default(autoincrement())
+  name              String
+  email             String         @unique
+  nickname          String?
+  profileImage      String?
+  oauthProvider     String?
+  oauthAccessToken  String?       @db.Text
+  oauthRefreshToken String?       @db.Text
+  userCategory      String?
+  employmentStatus  String?
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+  age               Int?
+  department        String?
+  grade             String?
+  exams             Exam[]
+  notifications     Notification[]
+  quizResults       QuizResult[]
 }
