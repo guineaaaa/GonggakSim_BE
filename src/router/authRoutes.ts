@@ -8,10 +8,11 @@ router.post("/logout", (req: Request, res: Response) => {
     let logoutUrl = "";
 
     if (!provider) {
-        return res.status(400).json({ 
+        res.status(400).json({ 
             error: "Invalid provider",
             message: "You must provide a valid provider ('kakao' or 'google')."
         });
+        return;
     }
         
     // 1. 세션 제거
