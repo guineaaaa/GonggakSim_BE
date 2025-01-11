@@ -5,7 +5,8 @@ import { PrismaSessionStore } from "@quixo3/prisma-session-store";
 import session from "express-session";
 import passport from "passport";
 
-import { googleStrategy } from "./auth.config.js";
+import kakaoRoutes from "./router/kakaoRouts.js";
+import googleRoutes from "./router/googleRouts.js";
 import { prisma } from "./db.config.js";
 
 //swagger
@@ -17,13 +18,6 @@ dotenv.config();
 
 const app = express()
 const port = process.env.PORT;
-
-// Passport 설정
-passport.use(googleStrategy);
-passport.serializeUser((user, done) => done(null, user));
-passport.deserializeUser<{ id: string; email: string; name: string }>(
-  (user, done) => done(null, user)
-);
 
 
 // 공통 응답 메서드 확장 미들웨어
@@ -104,7 +98,7 @@ app.use(express.urlencoded({ extended: false })); // 단순 객체 문자열 형
 app.use(
   session({
     cookie: {
-      maxAge: 7 * 24 * 60 * 60 * 1000, // ms
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7일일
     },
     resave: false,
     saveUninitialized: false,
@@ -120,26 +114,19 @@ app.use(
 app.use(passport.initialize());
 app.use(passport.session());
 
+// 구글 인증 라우트
+app.use("/oauth2", googleRoutes);
+
+// 카카오 인증 라우트
+app.use("/oauth2", kakaoRoutes);
+
 
 // API 작성 //
-
 // 기본 라우트
 app.get('/', (req, res) => {
   res.send('Hello World!')
 })
 
-// 인증 라우트
-app.get("/oauth2/login/google", passport.authenticate("google"));
-app.get(
-  "/oauth2/callback/google",
-  passport.authenticate("google", {
-    failureRedirect: "/oauth2/login/google",
-    failureMessage: true,
-  }),
-  (req, res) => {
-    res.redirect("/");
-  }
-);
 
 
 // 전역 오류 처리 미들웨어
