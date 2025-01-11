@@ -7,6 +7,7 @@ import passport from "passport";
 
 import kakaoRoutes from "./router/kakaoRouts.js";
 import googleRoutes from "./router/googleRouts.js";
+import authRoutes from "./router/authRoutes.js";
 import { prisma } from "./db.config.js";
 
 //swagger
@@ -120,6 +121,8 @@ app.use("/oauth2", googleRoutes);
 // 카카오 인증 라우트
 app.use("/oauth2", kakaoRoutes);
 
+// 로그아웃 라우트
+app.use("/oauth2", authRoutes);
 
 // API 작성 //
 // 기본 라우트
