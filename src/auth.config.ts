@@ -33,6 +33,9 @@ const googleVerify = async (
     
   let user = await prisma.user.findFirst({ where: { email } })
   
+  // 신규 사용자 여부 확인
+  const isNewUser = !user;
+
   if (!user) { 
     user = await prisma.user.create({
       data: {
@@ -52,8 +55,13 @@ const googleVerify = async (
       },
     });
   }
-  
-  return { id: user.id, email: user.email, name: user.name };
+
+  return { 
+    id: user.id, 
+    email: user.email, 
+    name: user.name,
+    isNewUser
+   };
 };
 
 export const kakaoStrategy = new KakaoStrategy(
@@ -80,11 +88,6 @@ const kakaoVerify = async (
   // 이메일 주소 추출
   const email = profile._json.kakao_account.email;
 
-  // if (!email) {
-  //   throw new Error("Kakao email not found!");
-  // }
-
-  // 기존 사용자 조회 -> true를 반환하도록 없으면 false
   let user = await prisma.user.findFirst({ where: { email } });
 
   if (!user) {
@@ -109,5 +112,9 @@ const kakaoVerify = async (
     });
   }
 
-  return { id: user.id, email: user.email, name: user.name };
+  return {
+    id: user.id, 
+    email: user.email, 
+    name: user.name 
+  };
 };
