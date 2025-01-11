@@ -7,6 +7,13 @@ router.post("/logout", (req: Request, res: Response) => {
     const provider = req.query.provider as string;
     let logoutUrl = "";
 
+    if (!provider) {
+        return res.status(400).json({ 
+            error: "Invalid provider",
+            message: "You must provide a valid provider ('kakao' or 'google')."
+        });
+    }
+        
     // 1. 세션 제거
     req.logout((err) => {
         if (err) {
@@ -15,6 +22,7 @@ router.post("/logout", (req: Request, res: Response) => {
                 message: err.message
             });
         }
+
 
         // 2. SNS 제공자 로그아웃 URL 생성
         if (provider === "kakao") {
