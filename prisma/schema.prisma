@@ -27,22 +27,25 @@ model Certification {
   passingCriteria      String?
   fee                  String?
   announcementSchedule String?
+  createdAt            DateTime       @default(now())
+  updatedAt            DateTime       @updatedAt
   notification         Notification[]
   quizRanges           QuizRange[]
   schedules            Schedule[]
 }
 
 model Exam {
-  id        Int       @id @default(autoincrement())
-  user      User      @relation(fields: [userId], references: [id])
-  userId    Int
-  title     String
-  examDate  DateTime
-  examRange String
-  memo      String?
-  status    String
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
+  id           Int       @id @default(autoincrement())
+  user         User      @relation(fields: [userId], references: [id])
+  userId       Int
+  title        String
+  examDate     DateTime
+  examRange    String
+  memo         String?
+  status       String
+  remindState  Boolean   @default(false)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
 }
 
 model Notification {
@@ -54,38 +57,56 @@ model Notification {
   endTime         String
   quizType        String
   certificationId Int
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
+  isActive        Boolean       @default(true)
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
   certification   Certification @relation(fields: [certificationId], references: [id])
 }
 
 model QuizRange {
-  id              Int           @id @default(autoincrement())
-  certification   Certification @relation(fields: [certificationId], references: [id])
-  certificationId Int
-  rangeTitle      String
-  rangeDetails    String
-  quizResults     QuizResult[]
+  id               Int            @id @default(autoincrement())
+  certification    Certification  @relation(fields: [certificationId], references: [id])
+  certificationId  Int
+  rangeTitle       String
+  rangeDetails     String
+  quizResults      QuizResult[]
 }
 
 model QuizResult {
-  id          Int       @id @default(autoincrement())
-  user        User      @relation(fields: [userId], references: [id])
+  id          Int        @id @default(autoincrement())
+  user        User       @relation(fields: [userId], references: [id])
   userId      Int
-  quizRange   QuizRange @relation(fields: [quizRangeId], references: [id])
+  quizRange   QuizRange  @relation(fields: [quizRangeId], references: [id])
   quizRangeId Int
   isCorrect   Boolean
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
 }
 
 model Schedule {
-  id                Int           @id @default(autoincrement())
-  certification     Certification @relation(fields: [certificationId], references: [id])
-  certificationId   Int
-  examDate          DateTime
-  registrationStart DateTime
-  registrationEnd   DateTime
+  id                        Int           @id @default(autoincrement())
+  certification             Certification @relation(fields: [certificationId], references: [id])
+  certificationId           Int
+  examDate                  DateTime?
+  registrationStart         DateTime?
+  registrationEnd           DateTime?
+  isAlwaysOpen              Boolean      @default(false)
+  registrationDeadlineDays  Int?
+  lateRegistrationStart     DateTime?
+  lateRegistrationEnd       DateTime?
+  examLink                  String?
+  createdAt                 DateTime  @default(now())
+  updatedAt                 DateTime  @updatedAt
+  certificationAlrams       CertificationAlram[]
+}
+
+model CertificationAlram {
+  id              Int       @id @default(autoincrement())
+  schedule        Schedule  @relation(fields: [scheduleId], references: [id])
+  scheduleId      Int
+  alramState      Boolean   @default(false)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
 }
 
 model User {
