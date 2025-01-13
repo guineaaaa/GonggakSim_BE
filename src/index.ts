@@ -15,7 +15,11 @@ import swaggerAutogen from "swagger-autogen";
 import swaggerUiExpress from "swagger-ui-express";
 
 // controllers
-import { handleAddExam } from "./controllers/exam.controller.js";
+import {
+  handleAddExam,
+  handleGetExam,
+  handleDeleteExam,
+} from "./controllers/exam.controller.js";
 
 // 환경 변수 로드
 dotenv.config();
@@ -132,8 +136,11 @@ app.get("/", (req, res) => {
   res.send("Hello World!");
 });
 
-// 캘린더 사용자 시험 추가 API
+// 캘린더 API
 app.post("/api/v1/calander/exams", handleAddExam);
+app.get("/api/v1/calander/exams", handleGetExam);
+
+app.delete("/api/v1/calander/exams/:id", handleDeleteExam); //삭제하려는 시험 id
 
 // 전역 오류 처리 미들웨어
 app.use((err: any, req: Request, res: Response, next: NextFunction) => {

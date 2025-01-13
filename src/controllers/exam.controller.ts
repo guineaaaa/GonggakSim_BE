@@ -1,9 +1,13 @@
 import { Request, Response, NextFunction } from "express";
 import { StatusCodes } from "http-status-codes";
-
 import { bodyToExam, responseFromExam } from "../dtos/exam.dto.js";
-import { addExamService } from "../services/exam.service.js";
+import {
+  getExamsService,
+  addExamService,
+  deleteExamService,
+} from "../services/exam.service.js";
 
+// post
 export const handleAddExam = async (
   req: Request,
   res: Response,
@@ -15,6 +19,66 @@ export const handleAddExam = async (
   try {
     const exam = await addExamService(bodyToExam(req.body));
     res.status(StatusCodes.CREATED).success(exam);
+  } catch (error) {
+    next(error);
+  }
+};
+
+// get
+export const handleGetExam = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  console.log("사용자 캘린더 시험 조회 요청");
+
+  try {
+    const userId = Number(req.query.userId); // 쿼리 파라미터에서 userId 추출
+    if (!userId) {
+      res.status(StatusCodes.BAD_REQUEST).json({
+        success: false,
+        message: "User ID is required",
+      });
+      return;
+    }
+
+    const exams = await getExamsService(userId);
+
+    res.status(StatusCodes.OK).json({
+      success: true,
+      data: exams,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// delete
+export const handleDeleteExam = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  console.log("사용자 캘린더 시험 삭제 요청");
+
+  try {
+    const examId = Number(req.params.id); // url 파라미터에서 시험 id 추출
+    const userId = Number(req.query.userId); // query 파라미터에서 사용자 id추출
+    // console.log("디버깅" + examId + userId);
+
+    if (!examId || !userId) {
+      res.status(StatusCodes.BAD_REQUEST).json({
+        success: false,
+        message: "Exam ID and User ID are required",
+      });
+      return;
+    }
+
+    await deleteExamService(examId, userId);
+    res.status(StatusCodes.OK).json({
+      success: true,
+      message: "Exam deleted successfully",
+    });
   } catch (error) {
     next(error);
   }

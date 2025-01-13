@@ -21,3 +21,7 @@ export const responseFromExam = (exam: any) => {
     userId: exam.userId,
   };
 };
+
+export const responseFromExams = (exams: any[]) => {
+  return exams.map(responseFromExam);
+};
