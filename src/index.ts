@@ -16,36 +16,39 @@ import { collectUserInfo } from "./controllers/user.controller.js"
 import swaggerAutogen from "swagger-autogen";
 import swaggerUiExpress from "swagger-ui-express";
 
+// controllers
+import {
+  handleAddExam,
+  handleGetExam,
+  handleDeleteExam,
+} from "./controllers/exam.controller.js";
+
 // 환경 변수 로드
 dotenv.config();
 
-const app = express()
+const app = express();
 const port = process.env.PORT;
-
 
 // 공통 응답 메서드 확장 미들웨어
 app.use((req, res, next) => {
-
   res.create = (create) => {
     return res.json({
       resultType: "CREATE",
       error: null,
-      create});
+      create,
+    });
   };
 
   res.success = (success) => {
-    return res.json({ 
-      resultType: "SUCCESS", 
-      error: null, 
-      success });
+    return res.json({
+      resultType: "SUCCESS",
+      error: null,
+      success,
+    });
   };
 
-  res.error = ({ 
-    errorCode = "unknown", 
-    reason = null, 
-    data = null }) => {
-    
-      return res.json({
+  res.error = ({ errorCode = "unknown", reason = null, data = null }) => {
+    return res.json({
       resultType: "FAIL",
       error: { errorCode, reason, data },
       success: null,
@@ -59,11 +62,14 @@ app.use((req, res, next) => {
 app.use(
   "/docs",
   swaggerUiExpress.serve,
-  swaggerUiExpress.setup({}, {
-    swaggerOptions: {
-      url: "/openapi.json",
-    },
-  })
+  swaggerUiExpress.setup(
+    {},
+    {
+      swaggerOptions: {
+        url: "/openapi.json",
+      },
+    }
+  )
 );
 
 app.get("/openapi.json", async (req, res, next) => {
@@ -82,7 +88,7 @@ app.get("/openapi.json", async (req, res, next) => {
     },
     host: "localhost:${port}",
   };
-  
+
   const result = await swaggerAutogen(options)(outputFile, routes, doc);
   res.json(result ? result.data : null);
 });
@@ -93,8 +99,8 @@ app.get("/openapi.json", async (req, res, next) => {
 // Case2 'Request header field x-auth-token..' 프론트 엔드에서 보내는 header 정보 확인 : {allowedHeaders: ["x-auth-token", ...],}
 app.use(cors());
 
-app.use(express.static('public'));          // 정적 파일 접근
-app.use(express.json());                    // request의 본문을 json으로 해석할 수 있도록 함 (JSON 형태의 요청 body를 파싱하기 위함)
+app.use(express.static("public")); // 정적 파일 접근
+app.use(express.json()); // request의 본문을 json으로 해석할 수 있도록 함 (JSON 형태의 요청 body를 파싱하기 위함)
 app.use(express.urlencoded({ extended: false })); // 단순 객체 문자열 형태로 본문 데이터 해석
 
 // 세션 설정
@@ -123,6 +129,15 @@ app.use("/oauth2", authRoutes);
 
 // API 작성 //
 // 기본 라우트
+app.get("/", (req, res) => {
+  res.send("Hello World!");
+});
+
+// 캘린더 API
+app.post("/api/v1/calander/exams", handleAddExam);
+app.get("/api/v1/calander/exams", handleGetExam);
+
+app.delete("/api/v1/calander/exams/:id", handleDeleteExam); //삭제하려는 시험 id
 app.get('/', (req, res) => {
   res.send('Hello World!')
 })
@@ -145,8 +160,7 @@ app.use((err: any, req: Request, res: Response, next: NextFunction) => {
   });
 });
 
-
 // 서버 실행
 app.listen(port, () => {
-  console.log(`Example app listening on port ${port}`)
-})
+  console.log(`Example app listening on port ${port}`);
+});

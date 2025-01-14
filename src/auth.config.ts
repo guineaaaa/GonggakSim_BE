@@ -14,7 +14,7 @@ export const googleStrategy = new GoogleStrategy(
     state: true,
   },
   async (accessToken, refreshToken, profile, cb) => {
-    try{
+    try {
       const user = await googleVerify(accessToken, refreshToken, profile);
       cb(null, user);
     } catch (err) {
@@ -22,21 +22,21 @@ export const googleStrategy = new GoogleStrategy(
     }
   }
 );
-  
+
 const googleVerify = async (
   accessToken: string,
   refreshToken: string,
-  profile: { emails?: { value: string }[]; displayName: string;
-}) => {
+  profile: { emails?: { value: string }[]; displayName: string }
+) => {
   // 이메일 주소 추출
   const email = profile.emails?.[0]?.value;
-    
-  let user = await prisma.user.findFirst({ where: { email } })
-  
+
+  let user = await prisma.user.findFirst({ where: { email } });
+
   // 신규 사용자 여부 확인
   const isNewUser = !user;
 
-  if (!user) { 
+  if (!user) {
     user = await prisma.user.create({
       data: {
         email: email || "general",
@@ -56,12 +56,12 @@ const googleVerify = async (
     });
   }
 
-  return { 
-    id: user.id, 
-    email: user.email, 
+  return {
+    id: user.id,
+    email: user.email,
     name: user.name,
-    isNewUser
-   };
+    isNewUser,
+  };
 };
 
 export const kakaoStrategy = new KakaoStrategy(
@@ -71,7 +71,7 @@ export const kakaoStrategy = new KakaoStrategy(
     callbackURL: "http://localhost:3000/oauth2/login/kakao/callback",
   },
   async (accessToken, refreshToken, profile, cb) => {
-    try{
+    try {
       const user = await kakaoVerify(accessToken, refreshToken, profile);
       cb(null, user);
     } catch (err) {
@@ -83,8 +83,8 @@ export const kakaoStrategy = new KakaoStrategy(
 const kakaoVerify = async (
   accessToken: string,
   refreshToken: string,
-  profile: { _json: { kakao_account: { email: string }}; displayName: string;
-}) => {
+  profile: { _json: { kakao_account: { email: string } }; displayName: string }
+) => {
   // 이메일 주소 추출
   const email = profile._json.kakao_account.email;
 
@@ -113,8 +113,8 @@ const kakaoVerify = async (
   }
 
   return {
-    id: user.id, 
-    email: user.email, 
-    name: user.name 
+    id: user.id,
+    email: user.email,
+    name: user.name,
   };
 };
