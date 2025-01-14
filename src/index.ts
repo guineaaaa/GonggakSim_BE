@@ -10,6 +10,8 @@ import googleRoutes from "./router/googleRouts.js";
 import authRoutes from "./router/authRoutes.js";
 import { prisma } from "./db.config.js";
 
+import { collectUserInfo } from "./controllers/user.controller.js"
+
 //swagger
 import swaggerAutogen from "swagger-autogen";
 import swaggerUiExpress from "swagger-ui-express";
@@ -75,8 +77,8 @@ app.get("/openapi.json", async (req, res, next) => {
   const routes = ["./src/index.ts"]; // typescript에 따라서 index.ts로 변경
   const doc = {
     info: {
-      title: "Gonggaksim API",
-      description: "공각심 swagger",
+      title: "Gonggaksim 1.0v",
+      description: "공각심 swagger docs",
     },
     host: "localhost:${port}",
   };
@@ -99,7 +101,7 @@ app.use(express.urlencoded({ extended: false })); // 단순 객체 문자열 형
 app.use(
   session({
     cookie: {
-      maxAge: 7 * 24 * 60 * 60 * 1000, // 7일일
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7일
     },
     resave: false,
     saveUninitialized: false,
@@ -115,13 +117,8 @@ app.use(
 app.use(passport.initialize());
 app.use(passport.session());
 
-// 구글 인증 라우트
 app.use("/oauth2", googleRoutes);
-
-// 카카오 인증 라우트
 app.use("/oauth2", kakaoRoutes);
-
-// 로그아웃 라우트
 app.use("/oauth2", authRoutes);
 
 // API 작성 //
@@ -129,6 +126,9 @@ app.use("/oauth2", authRoutes);
 app.get('/', (req, res) => {
   res.send('Hello World!')
 })
+
+// 사용자 정보 수집 API
+app.post("/api/v1/users/consent", collectUserInfo);
 
 
 

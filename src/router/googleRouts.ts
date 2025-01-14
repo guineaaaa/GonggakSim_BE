@@ -10,11 +10,17 @@ passport.deserializeUser<{ email: string; name: string }>(
   (user, done) => done(null, user)
 );
 
+
 // 구글 인증 라우트
-router.get("/login/google", passport.authenticate("google"));
+router.get("/login/google", passport.authenticate("google")
+/*
+#swagger.tags = ["Kakao/Google/Naver"]
+*/
+);
 
 // 구글 인증 콜백 라우트
 router.get(
+    // #swagger.ignore=true
     "/login/google/callback",
     passport.authenticate("google", {
         failureRedirect: "/oauth2/login/google",

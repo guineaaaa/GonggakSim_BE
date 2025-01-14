@@ -110,9 +110,9 @@ model CertificationAlram {
 }
 
 model User {
-  id                Int            @id @default(autoincrement())
+  id                Int           @id @default(autoincrement())
   name              String
-  email             String         @unique
+  email             String        @unique
   nickname          String?
   profileImage      String?
   oauthProvider     String?
@@ -120,8 +120,9 @@ model User {
   oauthRefreshToken String?       @db.Text
   userCategory      String?
   employmentStatus  String?
-  createdAt         DateTime       @default(now())
-  updatedAt         DateTime       @updatedAt
+  hasAgreedToTerms  Boolean       @default(false)
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
   age               Int?
   department        String?
   grade             String?

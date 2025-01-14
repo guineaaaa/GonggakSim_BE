@@ -4,6 +4,10 @@ const router = express.Router();
 
 // 로그아웃 라우트
 router.post("/logout", (req: Request, res: Response) => {
+/*
+    #swagger.tags = ["Kakao/Google/Naver"]
+*/
+
     const provider = req.query.provider as string;
     let logoutUrl = "";
 
