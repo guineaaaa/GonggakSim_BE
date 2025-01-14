@@ -7,6 +7,7 @@ export const bodyToExam = (body: any) => {
     memo: body.memo,
     status: body.status,
     userId: body.userId,
+    remindState: body.remindState,
   };
 };
 
@@ -19,6 +20,7 @@ export const responseFromExam = (exam: any) => {
     memo: exam.memo,
     status: exam.status,
     userId: exam.userId,
+    remindState: exam.remindState,
   };
 };
 
