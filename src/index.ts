@@ -138,6 +138,7 @@ app.post("/api/v1/calander/exams", handleAddExam);
 app.get("/api/v1/calander/exams", handleGetExam);
 
 app.delete("/api/v1/calander/exams/:id", handleDeleteExam); //삭제하려는 시험 id
+
 app.get('/', (req, res) => {
   res.send('Hello World!')
 })

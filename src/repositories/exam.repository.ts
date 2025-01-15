@@ -11,6 +11,7 @@ export const addExam = async (data: any) => {
       memo: data.memo,
       status: data.status,
       userId: data.userId,
+      remindState: data.remindState,
     },
   });
 
@@ -23,12 +24,7 @@ export const getExam = async (examId: number): Promise<any> => {
   const exam = await prisma.exam.findFirst({ where: { id: examId } });
   return exam;
 };
-/*
-export const getExam = async (examId: number) => {
-  const exam = await prisma.exam.findFirst({ where: { id: examId } });
-  return exam;
-};
-*/
+
 // 시험 조회 (사용자별)
 export const getExamsByUserId = async (userId: number) => {
   const exams = await prisma.exam.findMany({

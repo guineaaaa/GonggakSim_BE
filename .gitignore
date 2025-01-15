@@ -4,3 +4,6 @@ node_modules/
 .env.*
 firebase-admin.json
 firebase-admin.js
+migration_lock.toml
+prisma/migrations/migration_lock.toml
+

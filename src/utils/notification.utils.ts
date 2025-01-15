@@ -45,7 +45,6 @@ export const generateRandomDays = (examDate: Date, count: number): Date[] => {
  * @param count 알림 횟수
  */
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const scheduleRandomNotifications = (
   exam: Exam,
   count: number

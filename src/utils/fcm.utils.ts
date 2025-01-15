@@ -1,6 +1,14 @@
 import admin from "firebase-admin";
-// @ts-ignore
-import serviceAccount from "../../firebase-admin.js"; // `import` 사용
+
+const serviceAccount = {
+  type: "service_account",
+  project_id: process.env.FIREBASE_PROJECT_ID || "",
+  private_key: (process.env.FIREBASE_PRIVATE_KEY || "").replace(/\\n/g, "\n"),
+  client_email: process.env.FIREBASE_CLIENT_EMAIL || "",
+  token_uri: "https://oauth2.googleapis.com/token",
+  auth_provider_x509_cert_url: "https://www.googleapis.com/v1/certs",
+  client_x509_cert_url: `https://www.googleapis.com/robot/v1/metadata/x509/${process.env.FIREBASE_CLIENT_EMAIL}`,
+} as admin.ServiceAccount;
 
 /**
  * FCM 초기화 (Firebase Admin SDK 설정 필요)
@@ -30,7 +38,7 @@ const getUserFcmToken = (userId: number): string => {
 };
 
 /**
- * FCM 알림 전송
+ * FCM 알림 전송 - 예약된 시간에 도달 시 호출됨
  * @param userId 사용자 ID
  * @param title 알림 제목
  * @param body 알림 본문

@@ -26,10 +26,10 @@ export const addExamService = async (data: any) => {
   const exam = await getExam(addedExamId);
 
   if (data.remindState) {
-    /*sendImmediateNotification(exam);
-    console.log("시험 테스트 알림 전송 테스트");*/
-    scheduleRandomNotifications(exam, 3);
-    console.log("시험 알림 전송 테스트");
+    sendImmediateNotification(exam);
+    console.log("시험 테스트 알림 전송 테스트");
+    /*scheduleRandomNotifications(exam, 3);
+    console.log("시험 알림 전송 테스트");*/
   } else {
     console.error("Exam not found for scheduling notifications");
   }
