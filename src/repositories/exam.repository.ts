@@ -11,6 +11,7 @@ export const addExam = async (data: any) => {
       memo: data.memo,
       status: data.status,
       userId: data.userId,
+      remindState: data.remindState,
     },
   });
 
@@ -18,7 +19,8 @@ export const addExam = async (data: any) => {
 };
 
 // 시험 조회
-export const getExam = async (examId: number) => {
+// 수정된 getExam 함수
+export const getExam = async (examId: number): Promise<any> => {
   const exam = await prisma.exam.findFirst({ where: { id: examId } });
   return exam;
 };
