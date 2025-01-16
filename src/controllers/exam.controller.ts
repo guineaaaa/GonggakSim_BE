@@ -64,7 +64,6 @@ export const handleDeleteExam = async (
   try {
     const examId = Number(req.params.id); // url 파라미터에서 시험 id 추출
     const userId = Number(req.query.userId); // query 파라미터에서 사용자 id추출
-    // console.log("디버깅" + examId + userId);
 
     if (!examId || !userId) {
       res.status(StatusCodes.BAD_REQUEST).json({

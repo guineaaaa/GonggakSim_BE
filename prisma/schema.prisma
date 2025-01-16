@@ -129,4 +129,5 @@ model User {
   exams             Exam[]
   notifications     Notification[]
   quizResults       QuizResult[]
+  fcmToken          String?       @db.VarChar(255)
 }
