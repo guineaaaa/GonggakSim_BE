@@ -8,5 +8,11 @@ declare namespace NodeJS {
       PASSPORT_GOOGLE_CLIENT_SECRET: string;
       PASSPORT_KAKAO_CLIENT_ID: string;
       PASSPORT_KAKAO_CLIENT_SECRET: string;
+      PASSPORT_NAVER_CLIENT_ID: string;
+      PASSPORT_NAVER_CLIENT_SECRET: string;
+      FIREBASE_PRIVATE_KEY: string;
+      FIREBASE_CLIENT_EMAIL: string;
+      FIREBASE_PROJECT_ID: string;
+      JWT_SECRET: string;
     }
   }
