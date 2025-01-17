@@ -1,7 +1,6 @@
 import express from "express";
 import passport from "passport";
 import { naverStrategy } from "../auth.config.js";
-import { refreshToken } from '../controllers/auth.controller.js';
 
 const router = express.Router();
 
@@ -39,7 +38,7 @@ router.get(
       res.cookie("accessToken", accessToken, {
         httpOnly: true,
         //secure: process.env.NODE_ENV === "production",
-        maxAge: 60 * 60 * 1000, // 1시간
+        maxAge: 60 * 60 * 10000, // 1시간 1000
         sameSite: "lax", // "strict"는 https 환경
         path: '/' //모든 경로에서 쿠키 접근 가능
       });
@@ -49,11 +48,5 @@ router.get(
       res.redirect(redirectURL);
     }
 );
-
-// 토큰 갱신 라우트 - 액세스토큰이 만료되면 부를 수 있도록 설정해야함
-router.post(
-  // #swagger.tags = ["토큰 갱신 API"]
-  '/refresh-token', 
-  refreshToken);
 
 export default router;

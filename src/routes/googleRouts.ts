@@ -1,6 +1,5 @@
 import express from "express";
 import passport from "passport";
-import { refreshToken } from '../controllers/auth.controller.js';
 import { googleStrategy } from "../auth.config.js";
 
 const router = express.Router();
@@ -41,7 +40,7 @@ router.get(
       res.cookie("accessToken", accessToken, {
         httpOnly: true,
         //secure: process.env.NODE_ENV === "production",
-        maxAge: 60 * 60 * 1000, // 1시간
+        maxAge: 60 * 60 * 10000, // 1시간
         sameSite: "lax", // "strict"는 https 환경
         path: '/' //모든 경로에서 쿠키 접근 가능
       });
@@ -51,9 +50,5 @@ router.get(
       res.redirect(redirectURL);
     }
   );
-
-// 토큰 갱신 라우트
-router.post('/refresh-token', refreshToken);
-  
 
 export default router;

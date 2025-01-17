@@ -133,7 +133,7 @@ app.get('/', (req, res) => {res.send('Hello World!')}) // 기본 라우트
 app.use("/oauth2", googleRoutes); // 구글 인증 라우트
 app.use("/oauth2", kakaoRoutes); // 카카오 인증 라우트
 app.use("/oauth2", naverRoutes); // 네이버 인증 라우트
-app.use("/oauth2", authRoutes); // 로그아웃 라우트
+app.use("/oauth2", authRoutes); // 로그아웃, 토큰 갱신, 토큰 검증 라우트
 
 // 캘린더 API
 app.post("/api/v1/calander/exams", handleAddExam);
