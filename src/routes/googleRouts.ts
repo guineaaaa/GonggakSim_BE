@@ -13,7 +13,10 @@ passport.deserializeUser<{ email: string; name: string }>(
 
 
 // 구글 인증 라우트
-router.get("/login/google", passport.authenticate("google")
+router.get("/login/google", passport.authenticate("google", {
+  accessType: 'offline',  // refreshToken을 받기 위해 필요
+  //prompt: 'consent',      // 매번 사용자 동의 화면을 보여줌 //select_account, login
+})
 /*
 #swagger.tags = ["Kakao/Google/Naver"]
 */

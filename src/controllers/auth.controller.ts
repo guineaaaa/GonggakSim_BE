@@ -5,10 +5,10 @@ import { refreshAccessToken } from "../utils/jwt.utils.js";
 // 토큰 갱신
 export const refreshToken = async (req: Request, res: Response): Promise<any> => {
     try{
-        const { refreshToken } = req.cookies['refreshToken'];
+        const refreshToken = req.cookies['refreshToken'];
 
         if(!refreshToken) {
-            return res.status(StatusCodes.BAD_REQUEST).json({
+            res.status(StatusCodes.BAD_REQUEST).json({
                 success: false,
                 message: 'Refresh token is required'
             });
@@ -34,6 +34,6 @@ export const refreshToken = async (req: Request, res: Response): Promise<any> =>
         return res.status(StatusCodes.UNAUTHORIZED).json({
             success: false,
             message: "토큰 갱신 실패"
-        })
+        });
     }
 }

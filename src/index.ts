@@ -148,7 +148,6 @@ app.get('/', (req, res) => {
 app.use("/api/v1/users", userRoutes); // 사용자 정보 수집 API
 
 
-
 // 전역 오류 처리 미들웨어
 app.use((err: any, req: Request, res: Response, next: NextFunction) => {
   if (res.headersSent) {

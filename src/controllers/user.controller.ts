@@ -109,13 +109,11 @@ export const collectUserInfo = async (req: Request, res: Response ) => {
 */
 
   try {
-    console.log("Request user:", (req as AuthRequest).user);
     const { user } = req as AuthRequest; // AuthRequest로 타입 캐스팅
-    const accessId = user?.id; //verifyToken으로부터 사용자 ID 가져오기
-    console.log("Access ID:", accessId);
+    const accessEmail = user?.email; //verifyToken으로부터 사용자 ID 가져오기
     const userData = req.body;
 
-    if (!accessId) {
+    if (!accessEmail) {
         res.status(StatusCodes.UNAUTHORIZED).json({ 
           success: false, 
           message: "인증이 필요합니다.2" 
@@ -126,7 +124,7 @@ export const collectUserInfo = async (req: Request, res: Response ) => {
 
     // DTO를 통해 유효성 검증 후, 서비스 호출
     const validatedData = userConsentDto(userData);
-    const result = await userConsent(accessId, validatedData);
+    const result = await userConsent(accessEmail, validatedData);
 
     res.status(StatusCodes.ACCEPTED).json({ success: true, message: "정보가 성공적으로 업데이트 되었습니다.", result });
   } catch (err) {

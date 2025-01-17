@@ -25,11 +25,10 @@ export const googleStrategy = new GoogleStrategy(
     callbackURL: "http://localhost:3000/oauth2/login/google/callback",
     scope: ["email", "profile"],
     state: true,
-  },
+  }, // 타입 단언 사용
   async (accessToken, refreshToken, profile, cb) => {
     try {
       const user = await googleVerify(accessToken, refreshToken, profile);
-      //const token = await refreshAccessToken(refreshToken);
       cb(null, user);
     } catch (err) {
       cb(err);
@@ -44,7 +43,6 @@ const googleVerify = async (
 ) => {
   // 이메일 주소 추출
   const email = profile.emails?.[0]?.value;
-
   let user = await prisma.user.findFirst({ where: { email, oauthProvider: "google" } });
 
   // 신규 사용자 여부 확인
@@ -61,7 +59,7 @@ const googleVerify = async (
     });
   } else {
     await prisma.user.update({
-      where: { email },
+      where: { email, oauthProvider: "google" },
       data: {
         oauthRefreshToken: refreshToken,
       },
@@ -72,6 +70,7 @@ const googleVerify = async (
     id: user.id,
     email: user.email,
     accessToken,
+    oauthProvider: user.oauthProvider,
     isNewUser,
   };
 };
@@ -86,7 +85,6 @@ export const kakaoStrategy = new KakaoStrategy(
   async (accessToken, refreshToken, profile, cb) => {
     try {
       const user = await kakaoVerify(accessToken, refreshToken, profile);
-      //const token = await refreshAccessToken(refreshToken);
       cb(null, user);
     } catch (err) {
       cb(err);
@@ -121,7 +119,7 @@ const kakaoVerify = async (
   } else {
     // 신규 사용자가 아니면 토큰 업데이트
     await prisma.user.update({
-      where: { email },
+      where: { email, oauthProvider: "kakao" },
       data: {
         oauthRefreshToken: refreshToken,
       },
@@ -132,6 +130,7 @@ const kakaoVerify = async (
     id: user.id,
     email,
     accessToken,
+    oauthProvider: user.oauthProvider,
     isNewUser
   };
 };
@@ -146,7 +145,6 @@ export const naverStrategy = new NaverStrategy(
   async (accessToken, refreshToken, profile, cb) => {
     try {
       const user = await naverVerify(accessToken, refreshToken, profile);
-      //const token = await refreshAccessToken(refreshToken);
       cb(null, user);
     } catch (err) {
       cb(err);
@@ -182,7 +180,7 @@ const naverVerify = async (
   } else {
     // 신규 사용자가 아니면 토큰 업데이트
     await prisma.user.update({
-      where: { email },
+      where: { email, oauthProvider: "naver" },
       data: {
         oauthRefreshToken: refreshToken,
       },
@@ -193,6 +191,7 @@ const naverVerify = async (
     id: user.id,
     email,
     accessToken,
+    oauthProvider: user.oauthProvider,
     isNewUser
   };
 };

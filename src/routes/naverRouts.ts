@@ -51,6 +51,9 @@ router.get(
 );
 
 // 토큰 갱신 라우트 - 액세스토큰이 만료되면 부를 수 있도록 설정해야함
-router.post('/refresh-token', refreshToken);
+router.post(
+  // #swagger.tags = ["토큰 갱신 API"]
+  '/refresh-token', 
+  refreshToken);
 
 export default router;

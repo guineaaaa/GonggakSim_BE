@@ -13,6 +13,5 @@ declare namespace NodeJS {
       FIREBASE_PRIVATE_KEY: string;
       FIREBASE_CLIENT_EMAIL: string;
       FIREBASE_PROJECT_ID: string;
-      JWT_SECRET: string;
     }
   }
