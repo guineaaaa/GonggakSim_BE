@@ -1,8 +1,24 @@
 import express, { Request, Response } from "express";
+import { verifyToken } from "../middlewares/auth.middleware.js";
+import { refreshUserToken } from '../controllers/auth.controller.js';
 
 const router = express.Router();
 
-// 로그아웃 라우트
+// 토큰 갱신 라우터
+router.post('/refresh-token', verifyToken, refreshUserToken);
+
+
+// 미들웨어 토큰 검증 확인 라우터
+router.post("/verify-token", verifyToken, async(req: Request, res: Response) => {
+  res.json({
+    success: true,
+    message: "토큰 검증 성공",
+    user: req.user, // 미들웨어에서 추가한 사용자 정보
+  });
+});
+
+
+// 로그아웃 라우터
 router.post("/logout", (req: Request, res: Response) => {
 /*
     #swagger.tags = ["Kakao/Google/Naver"]
@@ -28,12 +44,13 @@ router.post("/logout", (req: Request, res: Response) => {
             });
         }
 
-
         // 2. SNS 제공자 로그아웃 URL 생성
         if (provider === "kakao") {
             logoutUrl = `https://kauth.kakao.com/oauth/logout?client_id=${process.env.PASSPORT_KAKAO_CLIENT_ID}&logout_redirect_uri=http://localhost:3000/oauth2/login/kakao`;
         } else if (provider === "google") {
-            logoutUrl = `https://accounts.google.com/Logout?continue=http://localhost:3000/oauth2/login/google`;
+            logoutUrl = `https://accounts.google.com/Logout?continue=${encodeURIComponent("http://localhost:3000/oauth2/login/google")}`;
+        } else if (provider === "naver") {
+            logoutUrl = "https://nid.naver.com/nidlogin.logout"; // 로그아웃 후에 리디렉션은 클라이언트 측에서 로그인 화면으로 넘어가기
         }
 
         // 3. 로그아웃 응답

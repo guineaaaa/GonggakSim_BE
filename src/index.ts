@@ -4,10 +4,14 @@ import express, { Request, Response, NextFunction } from "express";
 import { PrismaSessionStore } from "@quixo3/prisma-session-store";
 import session from "express-session";
 import passport from "passport";
+import cookieParser from 'cookie-parser';
 
-import kakaoRoutes from "./router/kakaoRouts.js";
-import googleRoutes from "./router/googleRouts.js";
-import authRoutes from "./router/authRoutes.js";
+import kakaoRoutes from "./routes/kakaoRouts.js";
+import googleRoutes from "./routes/googleRouts.js";
+import naverRoutes from "./routes/naverRouts.js";
+import authRoutes from "./routes/authRoutes.js";
+import userRoutes from "./routes/userRoutes.js"
+
 import { prisma } from "./db.config.js";
 
 import { collectUserInfo } from "./controllers/user.controller.js";
@@ -104,6 +108,9 @@ app.use(express.static("public")); // 정적 파일 접근
 app.use(express.json()); // request의 본문을 json으로 해석할 수 있도록 함 (JSON 형태의 요청 body를 파싱하기 위함)
 app.use(express.urlencoded({ extended: false })); // 단순 객체 문자열 형태로 본문 데이터 해석
 
+// 쿠키 파서 설정정
+app.use(cookieParser());
+
 // 세션 설정
 app.use(
   session({
@@ -124,15 +131,12 @@ app.use(
 app.use(passport.initialize());
 app.use(passport.session());
 
-app.use("/oauth2", googleRoutes);
-app.use("/oauth2", kakaoRoutes);
-app.use("/oauth2", authRoutes);
+app.get('/', (req, res) => {res.send('Hello World!')}) // 기본 라우트
 
-// API 작성 //
-// 기본 라우트
-app.get("/", (req, res) => {
-  res.send("Hello World!");
-});
+app.use("/oauth2", googleRoutes); // 구글 인증 라우트
+app.use("/oauth2", kakaoRoutes); // 카카오 인증 라우트
+app.use("/oauth2", naverRoutes); // 네이버 인증 라우트
+app.use("/oauth2", authRoutes); // 로그아웃, 토큰 갱신, 토큰 검증 라우트
 
 // 캘린더 API
 app.post("/api/v1/calander/exams", handleAddExam);
@@ -148,6 +152,8 @@ app.get("/", (req, res) => {
 
 // 사용자 정보 수집 API
 app.post("/api/v1/users/consent", collectUserInfo);
+app.use("/api/v1/users", userRoutes); // 사용자 정보 수집 API
+
 
 // 전역 오류 처리 미들웨어
 app.use((err: any, req: Request, res: Response, next: NextFunction) => {
