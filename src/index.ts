@@ -10,7 +10,7 @@ import googleRoutes from "./router/googleRouts.js";
 import authRoutes from "./router/authRoutes.js";
 import { prisma } from "./db.config.js";
 
-import { collectUserInfo } from "./controllers/user.controller.js"
+import { collectUserInfo } from "./controllers/user.controller.js";
 
 //swagger
 import swaggerAutogen from "swagger-autogen";
@@ -22,6 +22,7 @@ import {
   handleGetExam,
   handleDeleteExam,
 } from "./controllers/exam.controller.js";
+import { handleRecommendSchedule } from "./controllers/schedule.controller.js";
 
 // 환경 변수 로드
 dotenv.config();
@@ -136,17 +137,17 @@ app.get("/", (req, res) => {
 // 캘린더 API
 app.post("/api/v1/calander/exams", handleAddExam);
 app.get("/api/v1/calander/exams", handleGetExam);
-
 app.delete("/api/v1/calander/exams/:id", handleDeleteExam); //삭제하려는 시험 id
 
-app.get('/', (req, res) => {
-  res.send('Hello World!')
-})
+// AI 시험 추천 API
+app.post("/api/v1/schedule/recommendation", handleRecommendSchedule);
+
+app.get("/", (req, res) => {
+  res.send("Hello World!");
+});
 
 // 사용자 정보 수집 API
 app.post("/api/v1/users/consent", collectUserInfo);
-
-
 
 // 전역 오류 처리 미들웨어
 app.use((err: any, req: Request, res: Response, next: NextFunction) => {
