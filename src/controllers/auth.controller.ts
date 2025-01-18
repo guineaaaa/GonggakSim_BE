@@ -22,7 +22,7 @@ export const refreshUserToken = async (req: Request, res: Response) => {
             return res.status(StatusCodes.NOT_FOUND).json({
                 success: false,
                 message: "반환된 토큰이 없습니다.",
-            });
+            })as any;
         }
 
         res.cookie("accessToken", tokens, {
