@@ -10,7 +10,7 @@ datasource db {
 model Session {
   id        String   @id
   sid       String   @unique
-  data      String   @db.VarChar(512)
+  data      String   @db.Text
   expiresAt DateTime @map("expires_at")
 
   @@map("session")
