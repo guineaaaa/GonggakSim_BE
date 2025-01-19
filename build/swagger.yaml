@@ -1,0 +1,99 @@
+openapi: 3.0.0
+info:
+  version: 1.0.0
+  title: Gonggacksim 1.0v API docs
+  description: 공각심 API 문서
+  license:
+    name: MIT
+servers:
+  - url: 'http://localhost:3000/'
+paths:
+  /users/login:
+    post:
+      summary: 사용자 로그인
+      description: 사용자 로그인을 처리합니다.
+      tags:
+        - Users
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  example: user@example.com
+                password:
+                  type: string
+                  example: secret123
+      responses:
+        '200':
+          description: 로그인 성공
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+                    example: eyJhbGciOiJIUzI1NiIsInR5cCI6...
+        '401':
+          description: 인증 실패
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Invalid credentials
+  /users/logout:
+    get:
+      summary: 사용자 로그아웃
+      description: 사용자 로그아웃을 처리합니다.
+      tags:
+        - Users
+      responses:
+        '200':
+          description: 로그아웃 성공
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Logout successful
+        '401':
+          description: 인증 실패
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Unauthorized
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        name:
+          type: string
+          example: John Doe
+        email:
+          type: string
+          example: user@example.com
+        profileImage:
+          type: string
+          example: 'https://example.com/profile.jpg'
