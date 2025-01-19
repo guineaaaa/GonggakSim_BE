@@ -62,30 +62,28 @@ export const logoutFromSNS = async (provider: string): Promise<string> => {
 };
 
 // 회원탈퇴
-export const deleteAccount = async (accessEmail: string, accessToken: string): Promise<void> => {
+export const deleteAccount = async (accessEmail: string, accessToken: string, provider: string): Promise<any> => {
     if (!accessEmail) throw new Error("User not authenticated.");
 
     const user = await prisma.user.findUnique({where: { email: accessEmail }});
     if (!user) throw new Error("사용자를 찾을 수 없습니다.");
-  
+
     // 1. SNS 연결 해제
-    if (user?.oauthProvider === "kakao") {
+    if (provider === "kakao") {
       await fetch("https://kapi.kakao.com/v1/user/unlink", {
         method: "POST",
         headers: { Authorization: `Bearer ${accessToken}` },
       });
-    } else if (user?.oauthProvider === "google") {
-      await fetch(`https://accounts.google.com/o/oauth2/revoke?token=${accessToken}`, { method: "POST" });
-    } else if (user?.oauthProvider === "naver") {
-        await fetch("https://nid.naver.com/oauth2/token", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/x-www-form-urlencoded",
-            },
-            body: `grant_type=delete&client_id=${process.env.NAVER_CLIENT_ID}&client_secret=${process.env.NAVER_CLIENT_SECRET}&access_token=${accessToken}`
-        });
+    } else if (provider === "google") {
+      await fetch(`https://accounts.google.com/o/oauth2/revoke?token=${accessToken}`, { 
+        method: "POST" });
+    } else if (provider === "naver") {
+      await fetch("https://nid.naver.com/oauth2/token", {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded",},
+        body: `grant_type=delete&client_id=${process.env.NAVER_CLIENT_ID}&client_secret=${process.env.NAVER_CLIENT_SECRET}&access_token=${accessToken}`
+      });
     }
-  
     // 2. 사용자 데이터 삭제
     await prisma.user.delete({ where: { id: user.id } });
   };

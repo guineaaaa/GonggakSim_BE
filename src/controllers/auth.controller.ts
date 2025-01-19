@@ -75,8 +75,9 @@ export const deleteUserAccount = async (req: Request, res: Response) => {
 
         const { user } = req as AuthRequest;
         const accessEmail = user?.email;
-    
-        await deleteAccount(accessEmail, accessToken);
+        const provider = req.query.provider as string;
+
+        await deleteAccount(accessEmail, accessToken, provider);
         await clearSession(req, res, "회원탈퇴 완료");
       } catch (error) {
         res.status(500).json({

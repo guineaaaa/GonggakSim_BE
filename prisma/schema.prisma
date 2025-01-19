@@ -36,7 +36,7 @@ model Certification {
 
 model Exam {
   id           Int       @id @default(autoincrement())
-  user         User      @relation(fields: [userId], references: [id])
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId       Int
   title        String
   examDate     DateTime
@@ -51,7 +51,7 @@ model Exam {
 
 model Notification {
   id              Int           @id @default(autoincrement())
-  user            User          @relation(fields: [userId], references: [id])
+  user            User          @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId          Int
   day             String
   startTime       String
@@ -75,7 +75,7 @@ model QuizRange {
 
 model QuizResult {
   id          Int        @id @default(autoincrement())
-  user        User       @relation(fields: [userId], references: [id])
+  user        User       @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId      Int
   quizRange   QuizRange  @relation(fields: [quizRangeId], references: [id])
   quizRangeId Int
@@ -136,7 +136,7 @@ model User {
 
 model UserCategory {
   id         Int      @id @default(autoincrement())
-  user       User     @relation(fields: [userId], references: [id])
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId     Int
   category   Category @relation(fields: [categoryId], references: [id])
   categoryId Int
