@@ -1,8 +1,9 @@
 import { Request, Response } from 'express';
-import { refreshAccessToken } from '../services/auth.service.js';
+import { refreshAccessToken, logoutFromSNS, deleteAccount, clearSession } from '../services/auth.service.js';
 import { AuthRequest } from "../middlewares/auth.middleware.js";
 import { StatusCodes } from 'http-status-codes';
 
+// 토큰 갱신 controller
 export const refreshUserToken = async (req: Request, res: Response) => {
     try {
         const { user } = req as AuthRequest; // AuthRequest로 타입 캐스팅
@@ -46,3 +47,42 @@ export const refreshUserToken = async (req: Request, res: Response) => {
         });
     }
 }
+
+// 로그아웃 controller
+export const logoutUser = async (req: Request, res: Response) => {
+    try {
+        const { user } = req as AuthRequest;
+        const provider = req.query.provider as string;
+    
+        if (!user) throw new Error("사용자가 인증되지 않았습니다.");
+        const logoutUrl = await logoutFromSNS(provider);
+    
+        await clearSession(req, res, "로그아웃 성공.", logoutUrl);
+      } catch (error) {
+        res.status(500).json({
+          errorCode: "logout_error",
+          reason: "서버 에러 500",
+        });
+    }
+};
+
+
+// 회원탈퇴 controller
+export const deleteUserAccount = async (req: Request, res: Response) => {
+    try {
+        const accessToken = req.cookies?.accessToken;
+        if (!accessToken) throw new Error("쿠키에서 액세스 토큰을 찾을 수 없습니다.");
+
+        const { user } = req as AuthRequest;
+        const accessEmail = user?.email;
+        const provider = req.query.provider as string;
+
+        await deleteAccount(accessEmail, accessToken, provider);
+        await clearSession(req, res, "회원탈퇴 완료");
+      } catch (error) {
+        res.status(500).json({
+          errorCode: "account_deletion_error",
+          reason: "회원탈퇴 서버 에러",
+        });
+    }
+};

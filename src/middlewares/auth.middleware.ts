@@ -94,7 +94,7 @@ export const verifyToken = async (req: Request, res: Response, next: NextFunctio
     }
 
     // 사용자 정보 가져오기 (예: Kakao, Google 등)
-    const oauthProvider = req.body.oauthProvider; // 클라이언트에서 전달받은 OAuth 제공자
+    const oauthProvider = req.query.provider as string; // 클라이언트에서 전달받은 OAuth 제공자
     if (!oauthProvider) {
       return res.status(StatusCodes.BAD_REQUEST).json({
         success: false,

@@ -36,7 +36,7 @@ model Certification {
 
 model Exam {
   id           Int       @id @default(autoincrement())
-  user         User      @relation(fields: [userId], references: [id])
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId       Int
   title        String
   examDate     DateTime
@@ -51,7 +51,7 @@ model Exam {
 
 model Notification {
   id              Int           @id @default(autoincrement())
-  user            User          @relation(fields: [userId], references: [id])
+  user            User          @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId          Int
   day             String
   startTime       String
@@ -75,7 +75,7 @@ model QuizRange {
 
 model QuizResult {
   id          Int        @id @default(autoincrement())
-  user        User       @relation(fields: [userId], references: [id])
+  user        User       @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId      Int
   quizRange   QuizRange  @relation(fields: [quizRangeId], references: [id])
   quizRangeId Int
@@ -119,8 +119,8 @@ model User {
   oauthProvider     String?
   oauthAccessToken  String?       @db.Text
   oauthRefreshToken String?       @db.Text
-  userCategory      String?
   employmentStatus  String?
+  employCategory    String?
   hasAgreedToTerms  Boolean       @default(false)
   createdAt         DateTime      @default(now())
   updatedAt         DateTime      @updatedAt
@@ -131,4 +131,21 @@ model User {
   notifications     Notification[]
   quizResults       QuizResult[]
   fcmToken          String?       @db.VarChar(255)
+  users              UserCategory[]
+}
+
+model UserCategory {
+  id         Int      @id @default(autoincrement())
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId     Int
+  category   Category @relation(fields: [categoryId], references: [id])
+  categoryId Int
+
+  @@unique([userId, categoryId])
+}
+
+model Category {
+  id    Int    @id @default(autoincrement())
+  name  String
+  users UserCategory[]
 }

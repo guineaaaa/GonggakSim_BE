@@ -1,9 +1,8 @@
 import { Request, Response } from 'express';
-import { PrismaClient } from '@prisma/client';
+import { prisma } from "../db.config.js"
 import { AuthRequest } from "../middlewares/auth.middleware.js";
 import { StatusCodes } from 'http-status-codes';
 
-const prisma = new PrismaClient();
 
 export const updateAgreement = async (req: Request, res: Response) => {
     const { user } = req as AuthRequest; // AuthRequest로 타입 캐스팅
