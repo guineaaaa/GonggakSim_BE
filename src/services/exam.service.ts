@@ -5,13 +5,15 @@ import {
   deleteExam,
 } from "../repositories/exam.repository.js";
 import { responseFromExams } from "../dtos/exam.dto.js";
-import {
-  sendImmediateNotification,
-  scheduleRandomNotifications,
-} from "../utils/notification.utils.js";
+import { scheduleRandomNotifications } from "../utils/notification.utils.js";
+import { getUserFcmToken } from "../utils/fcm.utils.js";
 
 // 캘린더 사용자 시험 추가
 export const addExamService = async (data: any) => {
+  // FCM 토큰이 없으면 데이터베이스에서 조회
+  if (!data.fcmToken) {
+    data.fcmToken = await getUserFcmToken(data.userId);
+  }
   const addedExamId = await addExam({
     id: data.id,
     title: data.title,
@@ -21,17 +23,16 @@ export const addExamService = async (data: any) => {
     status: data.status,
     userId: data.userId,
     remindState: data.remindState,
+    fcmToken: data.fcmToken, // FCM 토큰 추가
   });
 
   const exam = await getExam(addedExamId);
 
-  if (data.remindState) {
-    sendImmediateNotification(exam);
+  if (exam && exam.remindState && exam.fcmToken) {
+    scheduleRandomNotifications(exam, 3); // 알림 스케줄 생성성
     console.log("시험 테스트 알림 전송 테스트");
-    /*scheduleRandomNotifications(exam, 3);
-    console.log("시험 알림 전송 테스트");*/
   } else {
-    console.error("Exam not found for scheduling notifications");
+    console.error("Exam not found or no FCM Token for scheudling notification");
   }
   return exam;
 };

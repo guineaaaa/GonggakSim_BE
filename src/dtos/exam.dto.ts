@@ -8,6 +8,7 @@ export const bodyToExam = (body: any) => {
     status: body.status,
     userId: body.userId,
     remindState: body.remindState,
+    fcmToken: body.fcmToken,
   };
 };
 
@@ -21,6 +22,7 @@ export const responseFromExam = (exam: any) => {
     status: exam.status,
     userId: exam.userId,
     remindState: exam.remindState,
+    fcmToken: exam.fcmToken,
   };
 };
 
