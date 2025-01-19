@@ -1,5 +1,7 @@
 import admin from "firebase-admin";
+import { prisma } from "../db.config.js";
 
+// Firebase Admin SDK 인증 정보
 const serviceAccount = {
   type: "service_account",
   project_id: process.env.FIREBASE_PROJECT_ID || "",
@@ -14,7 +16,7 @@ const serviceAccount = {
  * FCM 초기화 (Firebase Admin SDK 설정 필요)
  */
 admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount),
+  credential: admin.credential.cert(serviceAccount), // Firebase 인증 정보 설정
 });
 
 /**
@@ -23,53 +25,58 @@ admin.initializeApp({
 interface FcmMessage {
   title: string; //제목
   body: string; //본문
-  token: string; //수신자의 FCM token
+  fcmToken: string; //수신자의 FCM token
 }
 
-/**
- * 사용자 FCM 토큰 조회 함수
- * @param userId 사용자 ID
- * @returns FCM 토큰
- */
-const getUserFcmToken = (userId: number): string => {
-  // 클라이언트 앱 토큰
-  // 안드로이드 장치의 고유 식별자..
-  return "USER_FCM_TOKEN";
+// 사용자 FCM 토큰 조회 함수
+export const getUserFcmToken = async (
+  userId: number
+): Promise<string | null> => {
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { fcmToken: true },
+  });
+  return user?.fcmToken || null;
 };
 
 /**
  * FCM 알림 전송 - 예약된 시간에 도달 시 호출됨
- * @param userId 사용자 ID
+ * @param fcmToken FCM 토큰큰
  * @param title 알림 제목
  * @param body 알림 본문
  */
 export const sendFcmNotification = (
-  userId: number,
-  title: string,
-  body: string
+  fcmToken: string, //수신자의 FCM 토큰
+  title: string, // 알림 제목
+  body: string // 알림 본문문
 ): void => {
-  const token = getUserFcmToken(userId);
   console.log("sendFCMNotification 호출");
+
+  // FCM 메세지 생성하기기
   const message: FcmMessage = {
-    title,
-    body,
-    token,
+    title, //메세지 제목
+    body, // 메세지 본문
+    fcmToken, // 수신자의 FCM 토큰
   };
 
+  // Firebase Admin SDK를 통해 메세지 전송
   admin
     .messaging()
     .send({
+      // 메세지 구성
       //Firebase Cloud Messaing API에 요청 보냄
       notification: {
-        title: message.title,
-        body: message.body,
+        title: message.title, //알림 제목
+        body: message.body, // 알림 본문
       },
-      token: message.token,
+      token: message.fcmToken, // 수신자 FCM 토큰
     })
+    // 메세지 전송 성공 시 처리
     .then((response) => {
       console.log("Successfully sent message:", response);
-      console.log("알림 전송:", { title, body, token });
+      console.log("알림 전송:", { title, body, fcmToken });
     })
+    // 메세지 전송 실패 시 처리
     .catch((error) => {
       console.error("Error sending message:", error);
     });

@@ -12,14 +12,14 @@ export const addExam = async (data: any) => {
       status: data.status,
       userId: data.userId,
       remindState: data.remindState,
+      fcmToken: data.fcmToken,
     },
   });
 
   return createdExam.id;
 };
 
-// 시험 조회
-// 수정된 getExam 함수
+// 시험 조회 (시험 별)
 export const getExam = async (examId: number): Promise<any> => {
   const exam = await prisma.exam.findFirst({ where: { id: examId } });
   return exam;
