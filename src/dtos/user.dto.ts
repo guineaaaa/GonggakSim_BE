@@ -3,8 +3,9 @@ export const userConsentDto = ( body: {
     age: any,
     department: string,
     grade: string,
-    category: string,
+    category: string[],
     employmentStatus: string,
+    employCategory: string,
 }) => {
     return {
         age: body.age,
@@ -12,5 +13,6 @@ export const userConsentDto = ( body: {
         grade: body.grade,
         category: body.category,
         employmentStatus: body.employmentStatus,
+        employCategory: body.employCategory,
     };
 };
