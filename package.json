@@ -8,6 +8,8 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "tsx scripts/build.ts",
     "start": "node dist/index.cjs",
+    "api-docs": "swagger-cli bundle ./src/swagger/openapi.yaml --outfile build/swagger.yaml --type yaml",
+    "predev": "npm run api-docs",
     "dev": "nodemon -e js,json,prisma,ts --exec \"prisma generate && tsx src/index.ts\""
   },
   "keywords": [],
@@ -35,9 +37,10 @@
     "passport-kakao": "^1.0.1",
     "passport-naver": "^1.0.6",
     "prisma": "^6.1.0",
-    "swagger-autogen": "^2.23.7",
+    "swagger-cli": "^4.0.4",
     "swagger-ui-express": "^5.0.1",
-    "ts-node": "^10.9.2"
+    "ts-node": "^10.9.2",
+    "yamljs": "^0.3.0"
   },
   "devDependencies": {
     "@tsconfig/node20": "^20.1.4",
@@ -53,6 +56,7 @@
     "@types/passport-kakao": "^1.0.3",
     "@types/passport-naver": "^1.0.4",
     "@types/swagger-ui-express": "^4.1.7",
+    "@types/yamljs": "^0.2.34",
     "esbuild": "^0.24.2",
     "nodemon": "^3.1.9",
     "prisma": "^6.2.1",

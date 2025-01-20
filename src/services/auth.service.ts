@@ -46,7 +46,7 @@ export const clearSession = async (req: Request, res: Response, successMessage: 
 
 // 로그아웃
 export const logoutFromSNS = async (provider: string): Promise<string> => {
-    if (!provider) throw new Error("sns제공자가 필요합니다.");
+    if (!provider) throw new Error("OAuth 제공자가 필요합니다.");
   
     // 로그아웃 url
     let logoutUrl = "";

@@ -17,8 +17,10 @@ import { prisma } from "./db.config.js";
 import { collectUserInfo } from "./controllers/user.controller.js";
 
 //swagger
-import swaggerAutogen from "swagger-autogen";
-import swaggerUiExpress from "swagger-ui-express";
+import swaggerUi from 'swagger-ui-express'
+import YAML from 'yamljs'
+import path from 'path';
+import { fileURLToPath } from 'url';
 
 // controllers
 import {
@@ -27,6 +29,10 @@ import {
   handleDeleteExam,
 } from "./controllers/exam.controller.js";
 import { handleRecommendSchedule } from "./controllers/schedule.controller.js";
+
+
+const __filename = fileURLToPath(import.meta.url); // 현재 파일 경로
+const __dirname = path.dirname(__filename); // 현재 디렉토리 경로
 
 // 환경 변수 로드
 dotenv.config();
@@ -64,39 +70,9 @@ app.use((req, res, next) => {
 });
 
 // swagger 설정
-app.use(
-  "/docs",
-  swaggerUiExpress.serve,
-  swaggerUiExpress.setup(
-    {},
-    {
-      swaggerOptions: {
-        url: "/openapi.json",
-      },
-    }
-  )
-);
+const swaggerSpec = YAML.load(path.join(__dirname, './swagger/openapi.yaml'));
+app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
-app.get("/openapi.json", async (req, res, next) => {
-  // #swagger.ignore = true
-  const options = {
-    openapi: "3.0.0",
-    disableLogs: true,
-    writeOutputFile: false,
-  };
-  const outputFile = "/dev/null"; // 파일 출력은 사용하지 않습니다.
-  const routes = ["./src/index.ts"]; // typescript에 따라서 index.ts로 변경
-  const doc = {
-    info: {
-      title: "Gonggaksim 1.0v",
-      description: "공각심 swagger docs",
-    },
-    host: "localhost:${port}",
-  };
-
-  const result = await swaggerAutogen(options)(outputFile, routes, doc);
-  res.json(result ? result.data : null);
-});
 
 // Express 기본 설정
 // cors 방식 허용
@@ -108,7 +84,7 @@ app.use(express.static("public")); // 정적 파일 접근
 app.use(express.json()); // request의 본문을 json으로 해석할 수 있도록 함 (JSON 형태의 요청 body를 파싱하기 위함)
 app.use(express.urlencoded({ extended: false })); // 단순 객체 문자열 형태로 본문 데이터 해석
 
-// 쿠키 파서 설정정
+// 쿠키 파서 설정
 app.use(cookieParser());
 
 // 세션 설정

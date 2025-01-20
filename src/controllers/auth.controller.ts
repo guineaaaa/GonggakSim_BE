@@ -12,7 +12,7 @@ export const refreshUserToken = async (req: Request, res: Response) => {
         if (!accessEmail) {
             res.status(StatusCodes.UNAUTHORIZED).json({ 
                 success: false, 
-                message: "인증이 필요합니다.- authController" 
+                message: "인증이 필요합니다." 
             });
         }
         
@@ -41,7 +41,7 @@ export const refreshUserToken = async (req: Request, res: Response) => {
 
     } catch (error) {
         console.error('Token refresh error:', error); // 확인용
-        return res.status(401).json({ 
+        return res.status(400).json({ 
             success: false, 
             message: "토큰 갱신 실패" 
         });
@@ -60,8 +60,8 @@ export const logoutUser = async (req: Request, res: Response) => {
         await clearSession(req, res, "로그아웃 성공.", logoutUrl);
       } catch (error) {
         res.status(500).json({
-          errorCode: "logout_error",
-          reason: "서버 에러 500",
+          success: false,
+          message: "로그아웃 실패",
         });
     }
 };
@@ -81,8 +81,8 @@ export const deleteUserAccount = async (req: Request, res: Response) => {
         await clearSession(req, res, "회원탈퇴 완료");
       } catch (error) {
         res.status(500).json({
-          errorCode: "account_deletion_error",
-          reason: "회원탈퇴 서버 에러",
+          success: false,
+          message: "회원탈퇴 실패",
         });
     }
 };
