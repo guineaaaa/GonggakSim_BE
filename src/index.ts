@@ -4,23 +4,23 @@ import express, { Request, Response, NextFunction } from "express";
 import { PrismaSessionStore } from "@quixo3/prisma-session-store";
 import session from "express-session";
 import passport from "passport";
-import cookieParser from 'cookie-parser';
+import cookieParser from "cookie-parser";
 
 import kakaoRoutes from "./routes/kakaoRouts.js";
 import googleRoutes from "./routes/googleRouts.js";
 import naverRoutes from "./routes/naverRouts.js";
 import authRoutes from "./routes/authRoutes.js";
-import userRoutes from "./routes/userRoutes.js"
+import userRoutes from "./routes/userRoutes.js";
 
 import { prisma } from "./db.config.js";
 
 import { collectUserInfo } from "./controllers/user.controller.js";
 
 //swagger
-import swaggerUi from 'swagger-ui-express'
-import YAML from 'yamljs'
-import path from 'path';
-import { fileURLToPath } from 'url';
+import swaggerUi from "swagger-ui-express";
+import YAML from "yamljs";
+import path from "path";
+import { fileURLToPath } from "url";
 
 // controllers
 import {
@@ -29,7 +29,6 @@ import {
   handleDeleteExam,
 } from "./controllers/exam.controller.js";
 import { handleRecommendSchedule } from "./controllers/schedule.controller.js";
-
 
 const __filename = fileURLToPath(import.meta.url); // 현재 파일 경로
 const __dirname = path.dirname(__filename); // 현재 디렉토리 경로
@@ -70,9 +69,8 @@ app.use((req, res, next) => {
 });
 
 // swagger 설정
-const swaggerSpec = YAML.load(path.join(__dirname, './swagger/openapi.yaml'));
-app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
-
+const swaggerSpec = YAML.load(path.join(__dirname, "./swagger/openapi.yaml"));
+app.use("/docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 // Express 기본 설정
 // cors 방식 허용
@@ -107,7 +105,9 @@ app.use(
 app.use(passport.initialize());
 app.use(passport.session());
 
-app.get('/', (req, res) => {res.send('Hello World!')}) // 기본 라우트
+app.get("/", (req, res) => {
+  res.send("Hello World!");
+}); // 기본 라우트
 
 app.use("/oauth2", googleRoutes); // 구글 인증 라우트
 app.use("/oauth2", kakaoRoutes); // 카카오 인증 라우트
@@ -129,7 +129,6 @@ app.get("/", (req, res) => {
 // 사용자 정보 수집 API
 app.post("/api/v1/users/consent", collectUserInfo);
 app.use("/api/v1/users", userRoutes); // 사용자 정보 수집 API
-
 
 // 전역 오류 처리 미들웨어
 app.use((err: any, req: Request, res: Response, next: NextFunction) => {
