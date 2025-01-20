@@ -8,25 +8,68 @@ info:
 servers:
   - url: 'http://localhost:3000/'
 paths:
-  /oauth2/login:
+  /oauth2/refresh-token:
     post:
-      summary: sns 사용자 로그인
-      description: kakao, google, naver 사용자 로그인을 처리
+      summary: SNS 토큰 갱신 API
+      description: 만료된 액세스 토큰을 갱신합니다.
       tags:
-        - Users
-      requestHeader:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                email:
-                  type: string
-                  example: user@example.com
-                password:
-                  type: string
-                  example: secret123
+        - OAuth
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: 토큰 갱신 성공
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: "토큰이 성공적으로 갱신되었습니다."
+        '404':
+          description: 인증 실패
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: "인증이 필요합니다."
+        '400':
+          description: 토큰 갱신 실패
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: "반환된 토큰이 없습니다."
+  /oauth2/login:
+    get:
+      summary: 로그인 API
+      description: 사용자 로그인을 처리합니다. //swagger에서는 불가능함
+      tags:
+        - OAuth
+      parameters:
+        - in: query
+          name: provider
+          required: true
+          schema:
+            type: string
+      security:
+        - BearerAuth: []
       responses:
         '200':
           description: 로그인 성공
@@ -35,25 +78,36 @@ paths:
               schema:
                 type: object
                 properties:
-                  token:
+                  message:
                     type: string
-                    example: eyJhbGciOiJIUzI1NiIsInR5cCI6...
-        '401':
-          description: 인증 실패
+                    example: "로그인 완료"
+        '500':
+          description: 서버 에러
           content:
             application/json:
               schema:
                 type: object
                 properties:
-                  error:
+                  errorCode:
                     type: string
-                    example: Invalid credentials
+                    example: "login_error"
+                  reason:
+                    type: string
+                    example: "로그인 실패"
   /oauth2/logout:
-    get:
-      summary: sns 사용자 로그아웃
+    post:
+      summary: SNS 로그아웃 API
       description: 사용자 로그아웃을 처리합니다.
       tags:
-        - Users
+        - OAuth
+      parameters:
+        - in: query
+          name: provider
+          required: true
+          schema:
+            type: string
+      security:
+        - BearerAuth: []
       responses:
         '200':
           description: 로그아웃 성공
@@ -64,36 +118,904 @@ paths:
                 properties:
                   message:
                     type: string
-                    example: Logout successful
-        '401':
-          description: 인증 실패
+                    example: "로그아웃 성공."
+                  snsLogoutUrl:
+                    type: string
+                    example: "https://accounts.google.com/Logout?continue=http://localhost:3000/oauth2/login/google"
+        '500':
+          description: 서버 에러
           content:
             application/json:
               schema:
                 type: object
                 properties:
-                  error:
+                  success:
+                    type: boolean
+                    example: false
+                  reason:
                     type: string
-                    example: Unauthorized
+                    example: "로그아웃 실패"
+  /oauth2/delete-account:
+    post:
+      summary: 회원탈퇴 API
+      description: 사용자 회원탈퇴를 처리합니다.
+      tags:
+        - OAuth
+      parameters:
+        - in: query
+          name: provider
+          required: true
+          schema:
+            type: string
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: 회원탈퇴 성공
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "회원탈퇴 완료"
+        '500':
+          description: 서버 에러
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: "회원탈퇴 실패"
+  /oauth2/consent:
+    post:
+      summary: 사용자 정보 수집 API
+      description: 사용자 정보를 수집합니다.
+      tags:
+        - Users
+      parameters:
+        - in: query
+          name: provider
+          required: true
+          schema:
+            type: string
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                age:
+                  type: integer
+                department:
+                  type: string
+                grade:
+                  type: string
+                category:
+                  type: array
+                  items:
+                    type: string
+                employmentStatus:
+                  type: string
+                employCategory:
+                  type: string
+              example:
+                age: 25
+                department: "소프트웨어학과"
+                grade: "졸업"
+                category: ["디자인/예술", "IT/개발"]
+                employmentStatus: "재직 중"
+                employCategory: "전산"
+      responses:
+        '200':
+          description: 정보 업데이트 성공
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: "update success."
+                  updatedConsent:
+                    type: object
+                    properties:
+                      age:
+                        type: integer
+                      department:
+                        type: string
+                      grade:
+                        type: string
+                      category:
+                        type: array
+                        items:
+                          type: string
+                      employmentStatus:
+                        type: string
+                      employCategory:
+                        type: string
+                    example:
+                      age: 25
+                      department: "소프트웨어학과"
+                      grade: "졸업"
+                      category: ["디자인/예술", "IT/개발"]
+                      employmentStatus: "재직 중"
+                      employCategory: "전산"
+        '400':
+          description: 정보 업데이트 실패
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: "사용자 정보 저장 중 오류가 발생했습니다."
+  /api/v1/users/suggest-info:
+    get:
+      summary: 유사 사용자 시험 추천 API
+      description: 유사 사용자 시험 추천
+      tags:
+        - Users
+      parameters:
+        - in: query
+          name: provider
+          required: true
+          schema:
+            type: string
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: 시험 추천 성공
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: "시험 추천 성공입니다."
+                  updatedConsent:
+                    type: object
+                    properties:
+                      Certification:
+                        type: array
+                        items:
+                          type: string
+                    example:
+                      Certification: ["TOEIC, 컴퓨터활용 1급"]
+        '400':
+          description: 유사 사용자 시험 추천 실패
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: "유사 사용자 시험 추천 중 실패했습니다."
+  /api/v1/users/mypage:
+    get:
+      summary: 마이페이지 조회 API
+      description: 사용자 정보 일부를 반환합니다.
+      tags:
+        - Users
+      parameters:
+        - in: query
+          name: provider
+          required: true
+          schema:
+            type: string
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: 마이페이지 조회 성공
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: "조회 성공 했습니다."
+                  data:
+                    type: object
+                    properties:
+                      id:
+                        type: integer
+                      name:
+                        type: string
+                      age:
+                        type: integer
+                      department:
+                        type: string
+                      grade:
+                        type: string
+                      category:
+                        type: array
+                        items:
+                          type: string
+                      employmentStatus:
+                        type: string
+                      employCategory:
+                        type: string
+                    example:
+                      id: 1
+                      name: "홍길동"
+                      age: 25
+                      department: "소프트웨어학과"
+                      grade: "졸업"
+                      category: ["디자인/예술", "IT/개발"]
+                      employmentStatus: "재직 중"
+                      employCategory: "전산"
+        '400':
+          description: 정보 업데이트 실패
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: "사용자 정보 저장 중 오류가 발생했습니다." 
+  /api/v1/certifications:
+    get:
+      summary: 자격증 전체 목록 조회 API
+      description: 전체 자격증 조회
+      tags:
+        - Certification
+      parameters:
+        - in: query
+          name: provider
+          required: true
+          schema:
+            type: string
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: 전체 목록 조회 성공
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: "조회 성공입니다."
+        '400':
+          description: 목록 조회 실패
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: "조회 실패했습니다."
+  /api/v1/certifications/category/{category}:
+    get:
+      summary: 카테고리별 자격증 조회 API
+      description: 자격증 카테고리별 조회
+      tags:
+        - Certification
+      parameters:
+        - in: query
+          name: provider
+          required: true
+          schema:
+            type: string
+        - in: path
+          name: ccategory
+          required: true
+          schema:
+            type: string
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: 조회 성공
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: "조회 성공입니다."
+        '400':
+          description: 조회 실패
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: "조회 실패했습니다."
+  /api/v1/certifications/{certificationId}:
+    get:
+      summary: 자격증 상세 조회 API
+      description: 자격증 상세 내용 조회
+      tags:
+        - Certification
+      parameters:
+        - in: query
+          name: provider
+          required: true
+          schema:
+            type: string
+        - in: path
+          name: certificationId
+          required: true
+          schema:
+            type: integer
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: 조회 성공
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: "조회 성공입니다."
+        '400':
+          description: 조회 실패
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: "조회 실패했습니다."
+  /api/v1/certifications/{certificationId}/schedules:
+    get:
+      summary: 접수기간 조회 API
+      description: 시험별 접수 기간 조회
+      tags:
+        - Certification
+      parameters:
+        - in: query
+          name: provider
+          required: true
+          schema:
+            type: string
+        - in: path
+          name: certificationId
+          required: true
+          schema:
+            type: string
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: 조회 성공
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: "조회 성공입니다."
+        '400':
+          description: 조회 실패
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: "조회 실패했습니다."
+  /api/v1/certifications/{certificationId}/notifications:
+    post:
+      summary: 접수 알림 신청 API
+      description: 시험 접수 알림 신청 기능
+      tags:
+        - Certification
+      parameters:
+        - in: query
+          name: provider
+          required: true
+          schema:
+            type: string
+        - in: path
+          name: certificationId
+          required: true
+          schema:
+            type: string
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: 알림신청 성공
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: "알림신청 성공입니다."
+        '400':
+          description: 알림신청 실패
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: "알림신청 실패했습니다." 
+  /api/v1/certifications/{certificationId}/apply:
+    get:
+      summary: 시험 접수 API
+      description: 시험 접수 기능
+      tags:
+        - Certification
+      parameters:
+        - in: query
+          name: provider
+          required: true
+          schema:
+            type: string
+        - in: path
+          name: certificationId
+          required: true
+          schema:
+            type: string
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: 접수 성공
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: "조회 성공입니다."
+        '400':
+          description: 접수 실패
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: "조회 실패했습니다."                                       
+  /api/v1/certifications/search:
+    get:
+      summary: 자격증 검색 API
+      description: 자격증 목록 검색 기능
+      tags:
+        - Certification
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: query
+          name: provider
+          required: true
+          schema:
+            type: string
+        - in: query
+          name: query
+          required: true
+          schema:
+            type: string
+        - in: category
+          name: provider
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 검색 성공
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: "검색 성공입니다."
+        '400':
+          description: 검색 실패
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: "검색 실패했습니다."
+  /api/v1/notification/settings:
+    post:
+      summary: 방해금지 시간대 설정 API
+      description: 방해 금지 시간대 설정 (최대 7개)
+      ags:
+        - Notification
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: query
+          name: provider
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 설정 저장 성공
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "success"
+                  message:
+                    type: string
+                    example: "Notification settings saved successfully"
+                  data:
+                    type: object
+                    properties:
+                      userId:
+                        type: integer
+                        example: 1
+                      dndTimes:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            days:
+                              type: 
+                              items:
+                                type: string
+                              example: ["월", "화", "수", "목", "금"]
+                            startTime:
+                              type: string
+                              example: "09:00"
+                            endTime:
+                              type: string
+                              example: "15:00"
+                      selectedExams:
+                        type: array
+                        items:
+                          type: string
+                        example: ["컴활2급", "워드"]
+                      quizTypes:
+                        type: array
+                        items:
+                          type: string
+                      example: ["받아적기"]
+                    quizRanges:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          certificationId:
+                            type: integer
+                            example: 1
+                          quizRange:
+                            type: array
+                            items:
+                              type: object
+                              properties:
+                                quizRangeId:
+                                  type: integer
+                                  example: 101
+                                rangeTitle:
+                                  type: string
+                                  example: "파트1: 개념"
+                                rangeDetails:
+                                  type: string
+                                  example: "기초 개념 설명"
+        '400':
+          description: 조회 실패
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "error"
+                  message:
+                    type: string
+                    example: "Invalid request data."          
+        '401':
+          description: 조회 실패
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "error"
+                  message:
+                    type: string
+                    example: "Unauthorized Access"  
+  /api/v1/schedule/recommendation:
+    post:
+      summary: AI시험 일정 추천 API
+      description: 시험 일정을 추천 기능
+      tags:
+        - Schedule
+      parameters:
+        - in: query
+          name: provider
+          required: true
+          schema:
+            type: string
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: 추천 성공
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: "추천 성공입니다."
+        '400':
+          description: 추천 실패
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: "추천 실패했습니다."
+  /api/v1/calander/exams:
+    post:
+      summary: 캘린더 사용자 시험 추가 API
+      description: 사용자 개인 시험 추가 기능
+      tags:
+        - Exam
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: query
+          name: provider
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 시험 추가 성공
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: "시험 추가 성공입니다."
+        '400':
+          description: 시험 추가 실패
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: "시험 추가 실패했습니다."   
+  /api/v1/calander/exams/{userId}:
+    get:
+      summary: 캘린더 사용자 시험 조회 API
+      description: 캘린더 사용자 시험 목록 조회 기능
+      tags:
+        - Exam
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: query
+          name: provider
+          required: true
+          schema:
+            type: string
+        - in: path
+          name: userId
+          required: true
+          schema:
+            type: Integer
+      responses:
+        '200':
+          description: 조회 성공
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: "조회 성공입니다."
+        '400':
+          description: 조회 실패
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: "조회회 실패했습니다."  
+  /api/v1/calander/exams/{examId}/{userId}:
+    delete:
+      summary: 캘린더 시험 삭제 API
+      description: 캘린더에 등록된 시험 삭제 기능
+      tags:
+        - Exam
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: query
+          name: provider
+          required: true
+          schema:
+            type: string
+        - in: path
+          name: examId
+          required: true
+          schema:
+            type: Integer
+        - in: path
+          name: userId
+          required: true
+          schema:
+            type: Integer
+      responses:
+        '200':
+          description: 삭제 성공
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: "삭제 성공입니다."
+        '400':
+          description: 삭제 실패
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: "삭제 실패했습니다."                                                                                           
+
 components:
   securitySchemes:
     BearerAuth:
       type: http
       scheme: bearer
       bearerFormat: JWT
-  schemas:
-    User:
-      type: object
-      properties:
-        id:
-          type: integer
-          example: 1
-        name:
-          type: string
-          example: John Doe
-        email:
-          type: string
-          example: user@example.com
-        profileImage:
-          type: string
-          example: 'https://example.com/profile.jpg'
+  # schemas:
+  #   User:
+  #     type: object
+  #     properties:
+  #       id:
+  #         type: integer
+  #         example: 1
+  #       name:
+  #         type: string
+  #         example: John Doe
+  #       email:
+  #         type: string
+  #         example: user@example.com
+  #       profileImage:
+  #         type: string
+  #         example: 'https://example.com/profile.jpg'
