@@ -1,80 +1,31 @@
-// import { Request, Response, NextFunction } from "express"
-// import { StatusCodes } from "http-status-codes";
-// import { bodyToUser } from "../dtos/user.dto.js";
-// import { userRegister } from "../services/user.service.js";
+import { Request, Response } from "express"
+import { StatusCodes } from "http-status-codes";
+import { userConsentDto } from "../dtos/user.dto.js";
+import { userConsent } from "../services/user.service.js";
+import { AuthRequest } from "../middlewares/auth.middleware.js";
 
-// export const handleUserRegister = async (req, res, next) => {
-//     /*
-//     #swagger.summary = '회원 가입 API';
-//     #swagger.requestBody = {
-//       required: true,
-//       content: {
-//         "application/json": {
-//           schema: {
-//             type: "object",
-//             properties: {
-//               name: { type: "string", example: "홍길동" },
-//               phoneNum: { type: "string", example: "010-0000-0000" },
-//               email: { type: "string", example: "sdf324@gmail.com" },
-//               password: { type: "string", example: "sfg23k@??" },
-//               gender: { type: "number", example: 0 },
-//               birthDate: { type: "string", format: "date" },
-//               address: { type: "string", example: "서울시 성북구" },
-//               preference: { type: "array", items: { type: "number" } }
-//             }
-//           }
-//         }
-//       }
-//     };
-//     #swagger.responses[200] = {
-//       description: "회원 가입 성공 응답",
-//       content: {
-//         "application/json": {
-//           schema: {
-//             type: "object",
-//             properties: {
-//               resultType: { type: "string", example: "SUCCESS" },
-//               error: { type: "object", nullable: true, example: null },
-//               success: {
-//                 type: "object",
-//                 properties: {
-//                   email: { type: "string" },
-//                   name: { type: "string" },
-//                   preferCategory: { type: "array", items: { type: "string" } }
-//                 }
-//               }
-//             }
-//           }
-//         }
-//       }
-//     };
-//     #swagger.responses[400] = {
-//       description: "회원 가입 실패 응답",
-//       content: {
-//         "application/json": {
-//           schema: {
-//             type: "object",
-//             properties: {
-//               resultType: { type: "string", example: "FAIL" },
-//               error: {
-//                 type: "object",
-//                 properties: {
-//                   errorCode: { type: "string", example: "400_U001" },
-//                   reason: { type: "string" },
-//                   data: { type: "object" }
-//                 }
-//               },
-//               success: { type: "object", nullable: true, example: null }
-//             }
-//           }
-//         }
-//       }
-//     };
-//   */
+export const collectUserInfo = async (req: Request, res: Response ) => {
+  try {
+    const { user } = req as AuthRequest; // AuthRequest로 타입 캐스팅
+    const accessEmail = user?.email; //verifyToken으로부터 사용자 ID 가져오기
+    const userData = req.body;
 
-//   console.log("회원가입을 요청했습니다!");
-//   console.log("body:", req.body);
+    if (!accessEmail) {
+        res.status(StatusCodes.UNAUTHORIZED).json({ 
+          success: false, 
+          message: "인증이 필요합니다.2" 
+        });
+        return;
+    }
 
-//   const user = await userRegister(bodyToUser(req.body));
-//   res.status(StatusCodes.OK).success(user);
-// };
+
+    // DTO를 통해 유효성 검증 후, 서비스 호출
+    const validatedData = userConsentDto(userData);
+    const result = await userConsent(accessEmail, validatedData);
+
+    res.status(200).json({ success: true, message: "정보가 성공적으로 업데이트 되었습니다.", result });
+  } catch (err) {
+    console.error(err);
+    res.status(StatusCodes.BAD_REQUEST).json({ success: false, message: "사용자 정보 저장 중 오류가 발생했습니다." });
+  }
+};

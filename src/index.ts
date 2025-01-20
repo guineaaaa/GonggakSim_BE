@@ -4,51 +4,62 @@ import express, { Request, Response, NextFunction } from "express";
 import { PrismaSessionStore } from "@quixo3/prisma-session-store";
 import session from "express-session";
 import passport from "passport";
+import cookieParser from 'cookie-parser';
 
-import { googleStrategy } from "./auth.config.js";
+import kakaoRoutes from "./routes/kakaoRouts.js";
+import googleRoutes from "./routes/googleRouts.js";
+import naverRoutes from "./routes/naverRouts.js";
+import authRoutes from "./routes/authRoutes.js";
+import userRoutes from "./routes/userRoutes.js"
+
 import { prisma } from "./db.config.js";
 
+import { collectUserInfo } from "./controllers/user.controller.js";
+
 //swagger
-import swaggerAutogen from "swagger-autogen";
-import swaggerUiExpress from "swagger-ui-express";
+import swaggerUi from 'swagger-ui-express'
+import YAML from 'yamljs'
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+// controllers
+import {
+  handleAddExam,
+  handleGetExam,
+  handleDeleteExam,
+} from "./controllers/exam.controller.js";
+import { handleRecommendSchedule } from "./controllers/schedule.controller.js";
+
+
+const __filename = fileURLToPath(import.meta.url); // 현재 파일 경로
+const __dirname = path.dirname(__filename); // 현재 디렉토리 경로
 
 // 환경 변수 로드
 dotenv.config();
 
-const app = express()
+const app = express();
 const port = process.env.PORT;
-
-// Passport 설정
-passport.use(googleStrategy);
-passport.serializeUser((user, done) => done(null, user));
-passport.deserializeUser<{ id: string; email: string; name: string }>(
-  (user, done) => done(null, user)
-);
-
 
 // 공통 응답 메서드 확장 미들웨어
 app.use((req, res, next) => {
-
   res.create = (create) => {
     return res.json({
       resultType: "CREATE",
       error: null,
-      create});
+      create,
+    });
   };
 
   res.success = (success) => {
-    return res.json({ 
-      resultType: "SUCCESS", 
-      error: null, 
-      success });
+    return res.json({
+      resultType: "SUCCESS",
+      error: null,
+      success,
+    });
   };
 
-  res.error = ({ 
-    errorCode = "unknown", 
-    reason = null, 
-    data = null }) => {
-    
-      return res.json({
+  res.error = ({ errorCode = "unknown", reason = null, data = null }) => {
+    return res.json({
       resultType: "FAIL",
       error: { errorCode, reason, data },
       success: null,
@@ -59,36 +70,9 @@ app.use((req, res, next) => {
 });
 
 // swagger 설정
-app.use(
-  "/docs",
-  swaggerUiExpress.serve,
-  swaggerUiExpress.setup({}, {
-    swaggerOptions: {
-      url: "/openapi.json",
-    },
-  })
-);
+const swaggerSpec = YAML.load(path.join(__dirname, './swagger/openapi.yaml'));
+app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
-app.get("/openapi.json", async (req, res, next) => {
-  // #swagger.ignore = true
-  const options = {
-    openapi: "3.0.0",
-    disableLogs: true,
-    writeOutputFile: false,
-  };
-  const outputFile = "/dev/null"; // 파일 출력은 사용하지 않습니다.
-  const routes = ["./src/index.ts"]; // typescript에 따라서 index.ts로 변경
-  const doc = {
-    info: {
-      title: "Gonggaksim API",
-      description: "공각심 swagger",
-    },
-    host: "localhost:${port}",
-  };
-  
-  const result = await swaggerAutogen(options)(outputFile, routes, doc);
-  res.json(result ? result.data : null);
-});
 
 // Express 기본 설정
 // cors 방식 허용
@@ -96,15 +80,18 @@ app.get("/openapi.json", async (req, res, next) => {
 // Case2 'Request header field x-auth-token..' 프론트 엔드에서 보내는 header 정보 확인 : {allowedHeaders: ["x-auth-token", ...],}
 app.use(cors());
 
-app.use(express.static('public'));          // 정적 파일 접근
-app.use(express.json());                    // request의 본문을 json으로 해석할 수 있도록 함 (JSON 형태의 요청 body를 파싱하기 위함)
+app.use(express.static("public")); // 정적 파일 접근
+app.use(express.json()); // request의 본문을 json으로 해석할 수 있도록 함 (JSON 형태의 요청 body를 파싱하기 위함)
 app.use(express.urlencoded({ extended: false })); // 단순 객체 문자열 형태로 본문 데이터 해석
+
+// 쿠키 파서 설정
+app.use(cookieParser());
 
 // 세션 설정
 app.use(
   session({
     cookie: {
-      maxAge: 7 * 24 * 60 * 60 * 1000, // ms
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7일
     },
     resave: false,
     saveUninitialized: false,
@@ -120,26 +107,28 @@ app.use(
 app.use(passport.initialize());
 app.use(passport.session());
 
+app.get('/', (req, res) => {res.send('Hello World!')}) // 기본 라우트
 
-// API 작성 //
+app.use("/oauth2", googleRoutes); // 구글 인증 라우트
+app.use("/oauth2", kakaoRoutes); // 카카오 인증 라우트
+app.use("/oauth2", naverRoutes); // 네이버 인증 라우트
+app.use("/oauth2", authRoutes); // 로그아웃, 토큰 갱신, 토큰 검증, 이용약관 동의 라우트
 
-// 기본 라우트
-app.get('/', (req, res) => {
-  res.send('Hello World!')
-})
+// 캘린더 API
+app.post("/api/v1/calander/exams", handleAddExam);
+app.get("/api/v1/calander/exams", handleGetExam);
+app.delete("/api/v1/calander/exams/:id", handleDeleteExam); //삭제하려는 시험 id
 
-// 인증 라우트
-app.get("/oauth2/login/google", passport.authenticate("google"));
-app.get(
-  "/oauth2/callback/google",
-  passport.authenticate("google", {
-    failureRedirect: "/oauth2/login/google",
-    failureMessage: true,
-  }),
-  (req, res) => {
-    res.redirect("/");
-  }
-);
+// AI 시험 추천 API
+app.post("/api/v1/schedule/recommendation", handleRecommendSchedule);
+
+app.get("/", (req, res) => {
+  res.send("Hello World!");
+});
+
+// 사용자 정보 수집 API
+app.post("/api/v1/users/consent", collectUserInfo);
+app.use("/api/v1/users", userRoutes); // 사용자 정보 수집 API
 
 
 // 전역 오류 처리 미들웨어
@@ -155,8 +144,7 @@ app.use((err: any, req: Request, res: Response, next: NextFunction) => {
   });
 });
 
-
 // 서버 실행
 app.listen(port, () => {
-  console.log(`Example app listening on port ${port}`)
-})
+  console.log(`Example app listening on port ${port}`);
+});

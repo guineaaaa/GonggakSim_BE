@@ -1,9 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -13,21 +7,13 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model User {
-  id               Int            @id @default(autoincrement())
-  name             String
-  email            String         @unique
-  nickname         String?
-  profileImage     String?
-  oauthProvider    String
-  oauthToken       String
-  userCategory     String
-  employmentStatus String
-  createdAt        DateTime       @default(now())
-  updatedAt        DateTime       @updatedAt
-  exams            Exam[]
-  quizResults      QuizResult[]
-  notifications    Notification[]
+model Session {
+  id        String   @id
+  sid       String   @unique
+  data      String   @db.Text
+  expiresAt DateTime @map("expires_at")
+
+  @@map("session")
 }
 
 model Certification {
@@ -41,67 +27,125 @@ model Certification {
   passingCriteria      String?
   fee                  String?
   announcementSchedule String?
-  schedules            Schedule[]
+  createdAt            DateTime       @default(now())
+  updatedAt            DateTime       @updatedAt
+  notification         Notification[]
   quizRanges           QuizRange[]
-  notifications        Notification[]
-}
-
-model Schedule {
-  id                Int           @id @default(autoincrement())
-  certification     Certification @relation(fields: [certificationId], references: [id])
-  certificationId   Int
-  examDate          DateTime
-  registrationStart DateTime
-  registrationEnd   DateTime
+  schedules            Schedule[]
 }
 
 model Exam {
-  id        Int      @id @default(autoincrement())
-  user      User     @relation(fields: [userId], references: [id])
-  userId    Int
-  title     String
-  examDate  DateTime
-  examRange String
-  memo      String?
-  status    String
+  id           Int       @id @default(autoincrement())
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId       Int
+  title        String
+  examDate     DateTime
+  examRange    String
+  memo         String?
+  status       String
+  remindState  Boolean   @default(false)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  fcmToken     String?
 }
 
 model Notification {
   id              Int           @id @default(autoincrement())
-  user            User          @relation(fields: [userId], references: [id])
+  user            User          @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId          Int
   day             String
   startTime       String
   endTime         String
   quizType        String
-  certification   Certification @relation(fields: [certificationId], references: [id])
   certificationId Int
+  isActive        Boolean       @default(true)
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  certification   Certification @relation(fields: [certificationId], references: [id])
 }
 
 model QuizRange {
-  id              Int           @id @default(autoincrement())
-  certification   Certification @relation(fields: [certificationId], references: [id])
-  certificationId Int
-  rangeTitle      String
-  rangeDetails    String
-  quizResults     QuizResult[]
+  id               Int            @id @default(autoincrement())
+  certification    Certification  @relation(fields: [certificationId], references: [id])
+  certificationId  Int
+  rangeTitle       String
+  rangeDetails     String
+  quizResults      QuizResult[]
 }
 
 model QuizResult {
-  id          Int       @id @default(autoincrement())
-  user        User      @relation(fields: [userId], references: [id])
+  id          Int        @id @default(autoincrement())
+  user        User       @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId      Int
-  quizRange   QuizRange @relation(fields: [quizRangeId], references: [id])
+  quizRange   QuizRange  @relation(fields: [quizRangeId], references: [id])
   quizRangeId Int
   isCorrect   Boolean
-  createdAt   DateTime  @default(now())
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
 }
 
-model Session {
-  id        String   @id
-  sid       String   @unique
-  data      String   @db.VarChar(512)
-  expiresAt DateTime @map("expires_at")
+model Schedule {
+  id                        Int           @id @default(autoincrement())
+  certification             Certification @relation(fields: [certificationId], references: [id])
+  certificationId           Int
+  examDate                  DateTime?
+  registrationStart         DateTime?
+  registrationEnd           DateTime?
+  isAlwaysOpen              Boolean      @default(false)
+  registrationDeadlineDays  Int?
+  lateRegistrationStart     DateTime?
+  lateRegistrationEnd       DateTime?
+  examLink                  String?
+  createdAt                 DateTime  @default(now())
+  updatedAt                 DateTime  @updatedAt
+  certificationAlrams       CertificationAlram[]
+}
 
-  @@map("session")
+model CertificationAlram {
+  id              Int       @id @default(autoincrement())
+  schedule        Schedule  @relation(fields: [scheduleId], references: [id])
+  scheduleId      Int
+  alramState      Boolean   @default(false)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+}
+
+model User {
+  id                Int           @id @default(autoincrement())
+  name              String
+  email             String        @unique
+  nickname          String?
+  profileImage      String?
+  oauthProvider     String?
+  oauthAccessToken  String?       @db.Text
+  oauthRefreshToken String?       @db.Text
+  employmentStatus  String?
+  employCategory    String?
+  hasAgreedToTerms  Boolean       @default(false)
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+  age               Int?
+  department        String?
+  grade             String?
+  exams             Exam[]
+  notifications     Notification[]
+  quizResults       QuizResult[]
+  fcmToken          String?       @db.VarChar(255)
+  users              UserCategory[]
+}
+
+model UserCategory {
+  id         Int      @id @default(autoincrement())
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId     Int
+  category   Category @relation(fields: [categoryId], references: [id])
+  categoryId Int
+
+  @@unique([userId, categoryId])
+}
+
+model Category {
+  id    Int    @id @default(autoincrement())
+  name  String
+  users UserCategory[]
 }

@@ -2,3 +2,8 @@ node_modules/
 # Keep environment variables out of version control
 .env
 .env.*
+firebase-admin.json
+firebase-admin.js
+migration_lock.toml
+prisma/migrations/migration_lock.toml
+
