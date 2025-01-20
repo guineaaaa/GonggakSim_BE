@@ -6,7 +6,8 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "ts-node --esm scripts/build.ts",
+    "prebuild": "npm install @esbuild/linux-x64",
+    "build": "tsx scripts/build.ts",
     "start": "node dist/index.cjs",
     "api-docs": "swagger-cli bundle ./src/swagger/openapi.yaml --outfile build/swagger.yaml --type yaml",
     "predev": "npm run api-docs",

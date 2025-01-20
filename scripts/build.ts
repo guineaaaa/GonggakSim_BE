@@ -3,15 +3,15 @@ import esbuild from "esbuild";
 await esbuild.build({
     entryPoints: ["./src/index.ts"],
     bundle: true,
-    format: "cjs",
+    format: "esm",
     outdir: "./dist",
-    outExtension: { ".js": ".cjs" },
+    outExtension: { ".js": ".mjs" },
     platform: "node",
     target: "node20",
     minify: true,
     keepNames: true,
     external: [
         'swagger-ui-express',
-        'swagger-autogen',
+        'yamljs'
     ]
 });
