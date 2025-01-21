@@ -17,7 +17,7 @@ export const updateAgreement = async (req: Request, res: Response) => {
         res.status(StatusCodes.UNAUTHORIZED).json({ 
             success: false, 
             message: "인증이 필요합니다." 
-        });
+      });
     }
 
   // agreements 검증
@@ -34,7 +34,7 @@ export const updateAgreement = async (req: Request, res: Response) => {
     return res.status(StatusCodes.BAD_REQUEST).json({ 
         success: false,
         message: '필수 약관에 모두 동의해야 합니다.' 
-    });
+    }) as any;
   }
 
   try {
