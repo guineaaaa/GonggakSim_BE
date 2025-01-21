@@ -29,6 +29,7 @@ import {
   handleDeleteExam,
 } from "./controllers/exam.controller.js";
 import { handleRecommendSchedule } from "./controllers/schedule.controller.js";
+import { handleGetCertifications } from "./controllers/certification.controller.js";
 
 const __filename = fileURLToPath(import.meta.url); // 현재 파일 경로
 const __dirname = path.dirname(__filename); // 현재 디렉토리 경로
@@ -121,6 +122,9 @@ app.delete("/api/v1/calander/exams/:id", handleDeleteExam); //삭제하려는 �
 
 // AI 시험 추천 API
 app.post("/api/v1/schedule/recommendation", handleRecommendSchedule);
+
+// 자격증 검색 API
+app.get("/api/v1/certifications/search", handleGetCertifications);
 
 app.get("/", (req, res) => {
   res.send("Hello World!");
