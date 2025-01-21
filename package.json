@@ -8,7 +8,7 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "prebuild": "npm install @esbuild/linux-x64",
     "build": "tsx scripts/build.ts",
-    "start": "node dist/index.cjs",
+    "start": "node dist/index.mjs",
     "api-docs": "swagger-cli bundle ./src/swagger/openapi.yaml --outfile build/swagger.yaml --type yaml",
     "predev": "npm run api-docs",
     "dev": "nodemon -e js,json,prisma,ts --exec \"prisma generate && tsx src/index.ts\""
