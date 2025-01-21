@@ -6,9 +6,9 @@ import session from "express-session";
 import passport from "passport";
 import cookieParser from "cookie-parser";
 
-import kakaoRoutes from "./routes/kakaoRouts.js";
-import googleRoutes from "./routes/googleRouts.js";
-import naverRoutes from "./routes/naverRouts.js";
+import kakaoRoutes from "./routes/kakaoRoutes.js";
+import googleRoutes from "./routes/googleRoutes.js";
+import naverRoutes from "./routes/naverRoutes.js";
 import authRoutes from "./routes/authRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
 
@@ -130,9 +130,7 @@ app.get("/", (req, res) => {
   res.send("Hello World!");
 });
 
-// 사용자 정보 수집 API
-app.post("/api/v1/users/consent", collectUserInfo);
-app.use("/api/v1/users", userRoutes); // 사용자 정보 수집 API
+app.use("/api/v1/users", userRoutes); // 사용자 정보 수집 API, 유사 사용자 추천 API
 
 // 전역 오류 처리 미들웨어
 app.use((err: any, req: Request, res: Response, next: NextFunction) => {
