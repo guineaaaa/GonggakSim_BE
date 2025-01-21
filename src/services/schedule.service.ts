@@ -6,8 +6,14 @@ import OpenAIProvider from "../utils/openai.js";
 export const recommendScheduleService = async (
   dto: ReturnType<typeof recommendScheduleDto>
 ) => {
-  const { name, userId, studyExperience, studyTimePerDay, preferredExamDays } =
-    dto;
+  const {
+    name,
+    userId,
+    studyExperience,
+    studyTimePerDay,
+    studyFrequency,
+    examGoal,
+  } = dto;
 
   try {
     // DB로부터 시험 일정들을 가져온다.
@@ -21,10 +27,12 @@ export const recommendScheduleService = async (
     // AI를 통해 추천 일정을 받기
     const recommendedPlan = await OpenAIProvider.fetchRecommendedPlan({
       userId,
+      examName: name,
       studyExperience,
       studyTimePerDay,
-      preferredExamDays,
-      availableSchedules: schedules,
+      studyFrequency,
+      examGoal,
+      availableSchedules: schedules, // DB로부터 가져온 시험 일정들
     });
 
     // 추천 일정 반환
