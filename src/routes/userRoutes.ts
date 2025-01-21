@@ -8,4 +8,6 @@ router.post('/user-info', verifyToken, collectUserInfo); // 사용자 정보 수
 
 router.get('/suggest-info', verifyToken, getSuggestions); // 유사 사용자 시험 추천 API
 
+router.patch('/mypage/user-edit', verifyToken, collectUserInfo); // 회원정보 수정 API
+
 export default router;

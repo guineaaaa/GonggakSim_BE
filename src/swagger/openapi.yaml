@@ -428,6 +428,99 @@ paths:
                   message:
                     type: string
                     example: "사용자 정보 저장 중 오류가 발생했습니다." 
+  /api/v1/users/mypage/user-edit:
+    patch:
+      summary: 사용자 정보 수정 API
+      description: 사용자 정보를 수정합니다.
+      tags:
+        - Users
+      parameters:
+        - in: query
+          name: provider
+          required: true
+          schema:
+            type: string
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                age:
+                  type: integer
+                department:
+                  type: string
+                grade:
+                  type: string
+                category:
+                  type: array
+                  items:
+                    type: string
+                employmentStatus:
+                  type: string
+                employCategory:
+                  type: string
+              example:
+                age: 25
+                department: "소프트웨어학과"
+                grade: "졸업"
+                category: ["디자인/예술", "IT/개발"]
+                employmentStatus: "재직 중"
+                employCategory: "전산"
+      responses:
+        '200':
+          description: 정보 업데이트 성공
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: "update success."
+                  updatedConsent:
+                    type: object
+                    properties:
+                      age:
+                        type: integer
+                      department:
+                        type: string
+                      grade:
+                        type: string
+                      category:
+                        type: array
+                        items:
+                          type: string
+                      employmentStatus:
+                        type: string
+                      employCategory:
+                        type: string
+                    example:
+                      age: 25
+                      department: "소프트웨어학과"
+                      grade: "졸업"
+                      category: ["디자인/예술", "IT/개발"]
+                      employmentStatus: "재직 중"
+                      employCategory: "전산"
+        '400':
+          description: 정보 업데이트 실패
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: "사용자 정보 저장 중 오류가 발생했습니다."  
   /api/v1/certifications:
     get:
       summary: 자격증 전체 목록 조회 API
