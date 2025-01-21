@@ -1,4 +1,4 @@
-// 입력받은 Body 값
+// 사용자 정보 수집 DTO
 export const userConsentDto = ( body: {
     age: any,
     department: string,
@@ -16,3 +16,10 @@ export const userConsentDto = ( body: {
         employCategory: body.employCategory,
     };
 };
+
+// 유사 사용자 시험 추천 DTO
+export interface SuggestInfoDto {
+    id: number;
+    name: string;
+    category: string;
+  }

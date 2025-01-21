@@ -175,6 +175,47 @@ paths:
                     example: 회원탈퇴 실패
   /oauth2/consent:
     post:
+      summary: 이용약관 동의 API
+      description: 이용약관 동의를 처리했습니다.
+      tags:
+        - OAuth
+      parameters:
+        - in: query
+          name: provider
+          required: true
+          schema:
+            type: string
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: 이용약관 동의 성공
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: 이용약관 동의 완료
+        '500':
+          description: 서버 에러
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: 이용약관 동의 실패
+  /api/v1/users/user-info:
+    post:
       summary: 사용자 정보 수집 API
       description: 사용자 정보를 수집합니다.
       tags:
