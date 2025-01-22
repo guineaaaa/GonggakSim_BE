@@ -129,13 +129,15 @@ app.post("/api/v1/schedule/recommendation", handleRecommendSchedule);
 // 자격증 검색 API
 app.get("/api/v1/certifications/search", handleGetCertifications);
 
+//자격증 목록 조회 API
+app.get("/api/v1/certifications", handleGetAllCertifications);
+app.get("/api/v1/certifications/category/:category", handleGetCertificationsByCategory);
+app.get("/api/v1/certifications/:id", handleGetCertificationById);
+
 app.get("/", (req, res) => {
   res.send("Hello World!");
 });
 
-app.get("/api/v1/certifications", handleGetAllCertifications);
-app.get("/api/v1/certifications/category/:category", handleGetCertificationsByCategory);
-app.get("/api/v1/certifications/:id", handleGetCertificationById);
 
 // 전역 오류 처리 미들웨어
 app.use((err: any, req: Request, res: Response, next: NextFunction) => {
