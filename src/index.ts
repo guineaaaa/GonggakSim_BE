@@ -11,6 +11,7 @@ import googleRoutes from "./routes/googleRoutes.js";
 import naverRoutes from "./routes/naverRoutes.js";
 import authRoutes from "./routes/authRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
+import scheduleRoutes from "./routes/scheduleRoutes.js";
 
 import { prisma } from "./db.config.js";
 
@@ -144,6 +145,9 @@ app.use((err: any, req: Request, res: Response, next: NextFunction) => {
     data: err.data || null,
   });
 });
+
+
+app.use("/api/v1", scheduleRoutes);
 
 // 서버 실행
 app.listen(port, () => {
