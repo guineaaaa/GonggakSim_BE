@@ -46,7 +46,7 @@ model Exam {
   remindState  Boolean   @default(false)
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
-  fcmToken     String?
+ 
 }
 
 model Notification {
@@ -130,7 +130,7 @@ model User {
   exams             Exam[]
   notifications     Notification[]
   quizResults       QuizResult[]
-  fcmToken          String?       @db.VarChar(255)
+  fcmToken     String?
   users              UserCategory[]
 }
 

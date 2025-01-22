@@ -48,7 +48,7 @@ export const getUserFcmToken = async (
 export const sendFcmNotification = (
   fcmToken: string, //수신자의 FCM 토큰
   title: string, // 알림 제목
-  body: string // 알림 본문문
+  body: string // 알림 본문
 ): void => {
   console.log("sendFCMNotification 호출");
 
@@ -58,7 +58,7 @@ export const sendFcmNotification = (
     body, // 메세지 본문
     fcmToken, // 수신자의 FCM 토큰
   };
-
+  console.log("FCM 메세지 구조:", { title, body, fcmToken });
   // Firebase Admin SDK를 통해 메세지 전송
   admin
     .messaging()
@@ -79,5 +79,6 @@ export const sendFcmNotification = (
     // 메세지 전송 실패 시 처리
     .catch((error) => {
       console.error("Error sending message:", error);
+      throw new Error("FCM 알림 전송에 실패");
     });
 };
