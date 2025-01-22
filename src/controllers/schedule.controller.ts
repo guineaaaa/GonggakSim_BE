@@ -34,13 +34,17 @@ export const handleRecommendSchedule = async (
 };
 
 // 특정 월의 시험 일정 조회
-export const getSchedulesByMonth = async (req: Request, res: Response) => {
+export const getSchedulesByMonth = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
   const certificationId = Number(req.params.certificationId);
-  const month = Number(req.params.month); // URL에서 월 정보 가져오기
-  const currentYear = new Date().getFullYear(); // 현재 연도
+  const month = Number(req.params.month);
+  const currentYear = new Date().getFullYear();
 
   if (!certificationId || isNaN(month) || month < 1 || month > 12) {
-    return res.status(400).json({ message: "유효한 자격증 ID와 월 정보를 제공해주세요." });
+    res.status(400).json({ message: "유효한 자격증 ID와 월 정보를 제공해주세요." });
+    return;
   }
 
   try {
@@ -48,8 +52,8 @@ export const getSchedulesByMonth = async (req: Request, res: Response) => {
       where: {
         certificationId,
         examDate: {
-          gte: new Date(`${currentYear}-${month}-01`), // 월의 첫째 날
-          lt: new Date(`${currentYear}-${month + 1}-01`), // 다음 달의 첫째 날
+          gte: new Date(`${currentYear}-${month}-01`),
+          lt: new Date(`${currentYear}-${month + 1}-01`),
         },
       },
       select: {
@@ -59,16 +63,17 @@ export const getSchedulesByMonth = async (req: Request, res: Response) => {
         registrationEnd: true,
         examLink: true,
       },
-      orderBy: { examDate: "asc" }, // 날짜 기준 정렬
+      orderBy: { examDate: "asc" },
     });
 
     if (schedules.length === 0) {
-      return res.status(404).json({ message: "해당 월의 시험 일정이 없습니다." });
+      res.status(404).json({ message: "해당 월의 시험 일정이 없습니다." });
+      return;
     }
 
-    return res.status(200).json({ schedules });
+    res.status(200).json({ schedules });
   } catch (error) {
     console.error("Error fetching schedules by month:", error);
-    return res.status(500).json({ message: "서버 오류가 발생했습니다." });
+    res.status(500).json({ message: "서버 오류가 발생했습니다." });
   }
 };
