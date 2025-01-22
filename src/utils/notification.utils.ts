@@ -1,6 +1,6 @@
 // notification.utils.ts -> 무작위 알림 생성, 스케줄링
 import cron from "node-cron";
-import { sendFcmNotification } from "./fcm.utils.js";
+import { getUserFcmToken, sendFcmNotification } from "./fcm.utils.js";
 
 /**
  * 시험 정보 데이터 구조 인터페이스
@@ -11,7 +11,6 @@ interface Exam {
   examDate: Date; // 시험 날짜 및 시간
   userId: number; // 사용자 ID
   remindState: boolean; //알림 상태 (true인 경우 알림 활성화)
-  fcmToken?: string;
 }
 
 /**
@@ -41,38 +40,62 @@ export const generateRandomDays = (examDate: Date, count: number): Date[] => {
     .map((timestamp) => new Date(timestamp))
     .sort((a, b) => a.getTime() - b.getTime());
 };
-
 /**
  * 무작위 알림 스케줄링 함수
  * @param exam 시험 정보
  * @param count 알림 횟수
  */
-
 export const scheduleRandomNotifications = (
-  exam: Exam, //스케줄링할 시험 정보
-  count: number //생성할 알림 횟수
+  exam: Exam, // 스케줄링할 시험 정보
+  count: number // 생성할 알림 횟수
 ): void => {
-  const randomDays = generateRandomDays(exam.examDate, count); //무작위 D-day 날짜 배열
+  const randomDays = generateRandomDays(exam.examDate, count); // 무작위 D-day 날짜 배열
 
   randomDays.forEach((date) => {
     const notificationTime = new Date(date); // 무작위 D-day를 Date 객체로 가져온다
     const cronTime = `${notificationTime.getMinutes()} ${notificationTime.getHours()} ${notificationTime.getDate()} ${
       notificationTime.getMonth() + 1
-    } *`; // cron 형식으로 날짜 및 시간을 변환 (분, 시, 일, 월, 요일)
+    } *`; // cron 형식으로 날짜 및 시간을 변환
+
     console.log("!!알림 시간대 스케줄링!!");
 
-    if (exam.fcmToken) {
-      cron.schedule(cronTime, () => {
+    cron.schedule(cronTime, async () => {
+      const fcmToken = await getUserFcmToken(exam.userId); // User의 FCM 토큰 조회
+      if (fcmToken) {
         sendFcmNotification(
-          exam.fcmToken!,
+          fcmToken,
           `시험 알림: ${exam.title}`,
           `시험 D-day가 다가옵니다!`
         );
-      });
-    } else {
-      console.warn(
-        `FCM 토큰이 없어 알림을 보낼 수 없습니다. 시험 ID: ${exam.id}`
-      );
-    }
+      } else {
+        console.warn(
+          `FCM 토큰이 없어 알림을 보낼 수 없습니다. 시험 ID: ${exam.id}`
+        );
+      }
+    });
   });
+};
+/**
+ * 알림을 즉시 전송하는 함수 (테스트용)
+ * @param exam 시험 정보
+ */
+export const sendImmediateNotification = async (exam: Exam): Promise<void> => {
+  console.log("즉시 알림 호출");
+
+  if (exam.remindState) {
+    try {
+      const fcmToken = await getUserFcmToken(exam.userId); // User의 FCM 토큰 조회
+      if (fcmToken) {
+        sendFcmNotification(
+          fcmToken,
+          `시험 알림: ${exam.title}`,
+          `시험 즉시 알림 테스트! ${exam.examDate}`
+        );
+      } else {
+        console.warn(`FCM 토큰을 찾을 수 없습니다. 사용자 ID: ${exam.userId}`);
+      }
+    } catch (error) {
+      console.error("즉시 알림 전송 중 에러 발생:", error);
+    }
+  }
 };

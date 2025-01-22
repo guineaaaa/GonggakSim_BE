@@ -12,7 +12,6 @@ export const addExam = async (data: any) => {
       status: data.status,
       userId: data.userId,
       remindState: data.remindState,
-      fcmToken: data.fcmToken,
     },
   });
 
