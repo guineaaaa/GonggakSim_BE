@@ -31,6 +31,8 @@ import {
 import { handleRecommendSchedule } from "./controllers/schedule.controller.js";
 import { handleGetCertifications } from "./controllers/certification.controller.js";
 
+import { handleGetAllCertifications, handleGetCertificationsByCategory, handleGetCertificationById } from "./controllers/certificateInquiry.controller.js";
+
 const __filename = fileURLToPath(import.meta.url); // 현재 파일 경로
 const __dirname = path.dirname(__filename); // 현재 디렉토리 경로
 
@@ -131,6 +133,9 @@ app.get("/", (req, res) => {
   res.send("Hello World!");
 });
 
+app.get("/api/v1/certifications", handleGetAllCertifications);
+app.get("/api/v1/certifications/category/:category", handleGetCertificationsByCategory);
+app.get("/api/v1/certifications/:id", handleGetCertificationById);
 
 // 전역 오류 처리 미들웨어
 app.use((err: any, req: Request, res: Response, next: NextFunction) => {
