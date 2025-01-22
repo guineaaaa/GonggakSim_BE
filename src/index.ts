@@ -31,6 +31,8 @@ import {
 import { handleRecommendSchedule } from "./controllers/schedule.controller.js";
 import { handleGetCertifications } from "./controllers/certification.controller.js";
 
+import { handleGetAllCertifications, handleGetCertificationsByCategory, handleGetCertificationById } from "./controllers/certificateInquiry.controller.js";
+
 const __filename = fileURLToPath(import.meta.url); // 현재 파일 경로
 const __dirname = path.dirname(__filename); // 현재 디렉토리 경로
 
@@ -126,6 +128,11 @@ app.post("/api/v1/schedule/recommendation", handleRecommendSchedule);
 
 // 자격증 검색 API
 app.get("/api/v1/certifications/search", handleGetCertifications);
+
+//자격증 목록 조회 API
+app.get("/api/v1/certifications", handleGetAllCertifications);
+app.get("/api/v1/certifications/category/:category", handleGetCertificationsByCategory);
+app.get("/api/v1/certifications/:id", handleGetCertificationById);
 
 app.get("/", (req, res) => {
   res.send("Hello World!");
