@@ -1,101 +1,149 @@
-// notification.utils.ts -> 무작위 알림 생성, 스케줄링
 import cron from "node-cron";
 import { getUserFcmToken, sendFcmNotification } from "./fcm.utils.js";
+import { Exam } from "../dtos/exam.dto.js";
+import { DnDTime, Day, QuizType } from "../dtos/notificationSettings.dto.js";
+import { getNotificationSettingsByUserId } from "../repositories/notification.repository.js";
 
-/**
- * 시험 정보 데이터 구조 인터페이스
- */
-interface Exam {
-  id: number; //시험id
-  title: string; //시험 제목
-  examDate: Date; // 시험 날짜 및 시간
-  userId: number; // 사용자 ID
-  remindState: boolean; //알림 상태 (true인 경우 알림 활성화)
-}
+// 요일 Enum을 Cron 형식의 숫자로 변환
+const dayToCronFormat = (day: Day): number => {
+  const dayMap: { [key in Day]: number } = {
+    [Day.일]: 0,
+    [Day.월]: 1,
+    [Day.화]: 2,
+    [Day.수]: 3,
+    [Day.목]: 4,
+    [Day.금]: 5,
+    [Day.토]: 6,
+  };
+  return dayMap[day];
+};
 
-/**
- * 시험일을 기준으로 현재 시간과 시험일 사이에 무작위 D-day를 생성
- * @param examDate 시험 날짜
- * @param count 알림 횟수
- * @returns 무작위 D-day 배열
- */
-export const generateRandomDays = (examDate: Date, count: number): Date[] => {
-  const examTimestamp = examDate.getTime(); // 시험 날짜를 타임 스탬프로 변환
-  const nowTimestamp = Date.now(); // 현재 시간을 타임 스탬프로 가져온다
-  const randomDays = new Set<number>(); // 중복 방지를 위한 Set 객체
+// Cron 작업을 관리하기 위한 Map
+const scheduledJobs = new Map<number, cron.ScheduledTask[]>();
 
-  // 지정된 횟수 (count) 만큼 무작위 날짜 생성
-  while (randomDays.size < count) {
-    const randomTimestamp =
-      nowTimestamp +
-      Math.random() * (examTimestamp - nowTimestamp - 24 * 60 * 60 * 1000);
-    // 현재 시간과 시험일 사이에서 최소 하루 전 까지만 무작위 생성
-    if (randomTimestamp < examTimestamp) {
-      // 생성된 시간이 시험 일자 이전일 경우만
-      randomDays.add(Math.floor(randomTimestamp));
+// 방해 금지 시간대 외에 알림 전송
+export const scheduleQuizNotifications = async (userId: number) => {
+  // 기존 스케줄 취소
+  if (scheduledJobs.has(userId)) {
+    const jobs = scheduledJobs.get(userId)!;
+    jobs.forEach((job) => job.stop());
+    scheduledJobs.delete(userId);
+  }
+
+  // 사용자 알림 설정 조회
+  const notifications = await getNotificationSettingsByUserId(userId);
+
+  const userJobs: cron.ScheduledTask[] = [];
+
+  for (const notification of notifications) {
+    const days = notification.days as Day[];
+    const quizTypes = notification.quizTypes as QuizType[];
+
+    for (const day of days) {
+      const dayOfWeek = dayToCronFormat(day);
+      const startMinutes = timeToMinutes(notification.startTime);
+      const endMinutes = timeToMinutes(notification.endTime);
+
+      // 하루의 모든 시간(분 단위)을 순회
+      for (let minute = 0; minute < 24 * 60; minute += 60) {
+        // 방해 금지 시간대인지 확인
+        if (minute >= startMinutes && minute <= endMinutes) {
+          continue; // 방해 금지 시간대면 스킵
+        }
+
+        const hour = Math.floor(minute / 60);
+        const minuteInHour = minute % 60;
+        const cronExpression = `${minuteInHour} ${hour} * * ${dayOfWeek}`;
+
+        const job = cron.schedule(cronExpression, async () => {
+          const fcmToken = await getUserFcmToken(userId);
+          if (fcmToken) {
+            await sendFcmNotification(
+              fcmToken,
+              `퀴즈 알림`,
+              `지금 퀴즈를 풀어보세요! (${quizTypes.join(", ")})`
+            );
+          }
+        });
+
+        userJobs.push(job);
+      }
     }
   }
 
-  return Array.from(randomDays)
-    .map((timestamp) => new Date(timestamp))
-    .sort((a, b) => a.getTime() - b.getTime());
+  scheduledJobs.set(userId, userJobs);
 };
-/**
- * 무작위 알림 스케줄링 함수
- * @param exam 시험 정보
- * @param count 알림 횟수
- */
+
+// 시간 문자열을 분 단위로 변환하는 함수
+const timeToMinutes = (time: string): number => {
+  const [hours, minutes] = time.split(":").map(Number);
+  return hours * 60 + minutes;
+};
+
+// 시험 리마인더를 위한 함수
+export const sendImmediateNotification = async (exam: any): Promise<void> => {
+  const fcmToken = await getUserFcmToken(exam.userId);
+  if (fcmToken) {
+    await sendFcmNotification(
+      fcmToken,
+      `시험 알림: ${exam.title}`,
+      `시험이 곧 시작됩니다!`
+    );
+  } else {
+    console.warn(`사용자 ${exam.userId}의 FCM 토큰이 없습니다.`);
+  }
+};
+
+// 랜덤 날짜 배열 생성 함수
+const generateRandomDates = (
+  startDate: Date,
+  endDate: Date,
+  count: number
+): Date[] => {
+  const randomDates: Date[] = [];
+  const start = startDate.getTime();
+  const end = endDate.getTime();
+
+  for (let i = 0; i < count; i++) {
+    const randomTime = start + Math.random() * (end - start);
+    randomDates.push(new Date(randomTime));
+  }
+
+  return randomDates;
+};
+
+// 랜덤 알림 스케줄링
 export const scheduleRandomNotifications = (
-  exam: Exam, // 스케줄링할 시험 정보
-  count: number // 생성할 알림 횟수
+  exam: Exam,
+  count: number
 ): void => {
-  const randomDays = generateRandomDays(exam.examDate, count); // 무작위 D-day 날짜 배열
+  const now = new Date();
+  const examDate = exam.examDate;
 
-  randomDays.forEach((date) => {
-    const notificationTime = new Date(date); // 무작위 D-day를 Date 객체로 가져온다
-    const cronTime = `${notificationTime.getMinutes()} ${notificationTime.getHours()} ${notificationTime.getDate()} ${
-      notificationTime.getMonth() + 1
-    } *`; // cron 형식으로 날짜 및 시간을 변환
+  if (now >= examDate) {
+    console.warn(
+      "시험일이 이미 지났거나 오늘입니다. 랜덤 알림을 스케쥴링하지 않습니다."
+    );
+    return;
+  }
 
-    console.log("!!알림 시간대 스케줄링!!");
+  const randomDates = generateRandomDates(now, examDate, count);
+  randomDates.forEach((date) => {
+    const cronExpression = `${date.getMinutes()} ${date.getHours()} ${date.getDate()} ${
+      date.getMonth() + 1
+    } *`;
 
-    cron.schedule(cronTime, async () => {
-      const fcmToken = await getUserFcmToken(exam.userId); // User의 FCM 토큰 조회
+    cron.schedule(cronExpression, async () => {
+      const fcmToken = await getUserFcmToken(exam.userId);
       if (fcmToken) {
-        sendFcmNotification(
+        await sendFcmNotification(
           fcmToken,
           `시험 알림: ${exam.title}`,
-          `시험 D-day가 다가옵니다!`
-        );
-      } else {
-        console.warn(
-          `FCM 토큰이 없어 알림을 보낼 수 없습니다. 시험 ID: ${exam.id}`
+          `시험이 다가오고 있습니다! 준비를 시작하세요.`
         );
       }
     });
   });
-};
-/**
- * 알림을 즉시 전송하는 함수 (테스트용)
- * @param exam 시험 정보
- */
-export const sendImmediateNotification = async (exam: Exam): Promise<void> => {
-  console.log("즉시 알림 호출");
 
-  if (exam.remindState) {
-    try {
-      const fcmToken = await getUserFcmToken(exam.userId); // User의 FCM 토큰 조회
-      if (fcmToken) {
-        sendFcmNotification(
-          fcmToken,
-          `시험 알림: ${exam.title}`,
-          `시험 즉시 알림 테스트! ${exam.examDate}`
-        );
-      } else {
-        console.warn(`FCM 토큰을 찾을 수 없습니다. 사용자 ID: ${exam.userId}`);
-      }
-    } catch (error) {
-      console.error("즉시 알림 전송 중 에러 발생:", error);
-    }
-  }
+  console.log(`${count}개의 랜덤 알림이 스케쥴링되었습니다.`);
 };

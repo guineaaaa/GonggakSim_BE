@@ -1,9 +1,9 @@
 import { Request, Response, NextFunction } from "express";
 import { StatusCodes } from "http-status-codes";
-import { bodyToExam, responseFromExam } from "../dtos/exam.dto.js";
+import { bodyToExam } from "../dtos/exam.dto.js";
 import {
-  getExamsService,
   addExamService,
+  getExamsService,
   deleteExamService,
 } from "../services/exam.service.js";
 
@@ -14,11 +14,13 @@ export const handleAddExam = async (
   next: NextFunction
 ) => {
   console.log("사용자 캘린더 시험 추가 요청");
-  console.log("body:", req.body);
-
   try {
-    const exam = await addExamService(bodyToExam(req.body));
-    res.status(StatusCodes.CREATED).success(exam);
+    const examData = bodyToExam(req.body);
+    const exam = await addExamService(examData);
+    res.status(StatusCodes.CREATED).json({
+      success: true,
+      data: exam,
+    });
   } catch (error) {
     next(error);
   }

@@ -53,10 +53,10 @@ model Notification {
   id              Int           @id @default(autoincrement())
   user            User          @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId          Int
-  day             String
+  days            Json
   startTime       String
   endTime         String
-  quizType        String
+  quizTypes       Json
   certificationId Int
   isActive        Boolean       @default(true)
   createdAt       DateTime      @default(now())
