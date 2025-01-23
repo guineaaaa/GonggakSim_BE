@@ -31,8 +31,13 @@ import {
 } from "./controllers/exam.controller.js";
 import { handleRecommendSchedule } from "./controllers/schedule.controller.js";
 import { handleGetCertifications } from "./controllers/certification.controller.js";
+import { handleDnDNotification } from "./controllers/notification.controller.js";
 
-import { handleGetAllCertifications, handleGetCertificationsByCategory, handleGetCertificationById } from "./controllers/certificateInquiry.controller.js";
+import {
+  handleGetAllCertifications,
+  handleGetCertificationsByCategory,
+  handleGetCertificationById,
+} from "./controllers/certificateInquiry.controller.js";
 
 const __filename = fileURLToPath(import.meta.url); // 현재 파일 경로
 const __dirname = path.dirname(__filename); // 현재 디렉토리 경로
@@ -124,6 +129,9 @@ app.post("/api/v1/calander/exams", handleAddExam);
 app.get("/api/v1/calander/exams", handleGetExam);
 app.delete("/api/v1/calander/exams/:id", handleDeleteExam); //삭제하려는 시험 id
 
+// 알림 방해금지 시간대 설정 API
+app.post("/api/v1/notification/settings", handleDnDNotification);
+
 // AI 시험 추천 API
 app.post("/api/v1/schedule/recommendation", handleRecommendSchedule);
 
@@ -132,13 +140,15 @@ app.get("/api/v1/certifications/search", handleGetCertifications);
 
 //자격증 목록 조회 API
 app.get("/api/v1/certifications", handleGetAllCertifications);
-app.get("/api/v1/certifications/category/:category", handleGetCertificationsByCategory);
+app.get(
+  "/api/v1/certifications/category/:category",
+  handleGetCertificationsByCategory
+);
 app.get("/api/v1/certifications/:id", handleGetCertificationById);
 
 app.get("/", (req, res) => {
   res.send("Hello World!");
 });
-
 
 // 전역 오류 처리 미들웨어
 app.use((err: any, req: Request, res: Response, next: NextFunction) => {
@@ -152,7 +162,6 @@ app.use((err: any, req: Request, res: Response, next: NextFunction) => {
     data: err.data || null,
   });
 });
-
 
 app.use("/api/v1", scheduleRoutes);
 

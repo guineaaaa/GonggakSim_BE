@@ -37,7 +37,6 @@
     "passport-google-oauth20": "^2.0.0",
     "passport-kakao": "^1.0.1",
     "passport-naver": "^1.0.6",
-    "prisma": "^6.1.0",
     "swagger-cli": "^4.0.4",
     "swagger-ui-express": "^5.0.1",
     "ts-node": "^10.9.2",

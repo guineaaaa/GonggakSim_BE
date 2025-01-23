@@ -1,10 +1,12 @@
 import { prisma } from "../db.config.js";
+import { Exam } from "../dtos/exam.dto.js";
 
 // 시험 추가
-export const addExam = async (data: any) => {
+export const addExam = async (data: Exam): Promise<number> => {
+  console.log("addExam 호출: ", data);
+
   const createdExam = await prisma.exam.create({
     data: {
-      id: data.id,
       title: data.title,
       examDate: data.examDate,
       examRange: data.examRange,

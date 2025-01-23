@@ -1,20 +1,30 @@
-export const bodyToExam = (body: any) => {
+export interface Exam {
+  id?: number;
+  title: string;
+  examDate: Date;
+  examRange: string;
+  memo: string;
+  status: string;
+  userId: number;
+  remindState: boolean;
+  fcmToken?: string | null;
+}
+
+export const bodyToExam = (body: any): Exam => {
   return {
-    id: body.id,
     title: body.title,
     examDate: new Date(body.examDate),
     examRange: body.examRange,
     memo: body.memo,
     status: body.status,
-    userId: body.userId,
-    remindState: body.remindState,
+    userId: Number(body.userId),
+    remindState: Boolean(body.remindState),
     fcmToken: body.fcmToken,
   };
 };
 
-export const responseFromExam = (exam: any) => {
+export const responseFromExam = (exam: Exam) => {
   return {
-    id: exam.id,
     title: exam.title,
     examDate: exam.examDate.toISOString(),
     examRange: exam.examRange,
