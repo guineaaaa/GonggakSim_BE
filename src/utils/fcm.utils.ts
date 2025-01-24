@@ -12,18 +12,14 @@ const serviceAccount = {
   client_x509_cert_url: `https://www.googleapis.com/robot/v1/metadata/x509/${process.env.FIREBASE_CLIENT_EMAIL}`,
 } as admin.ServiceAccount;
 
-/**
- * Firebase 초기화 (이미 초기화되지 않은 경우에만)
- */
+// 이미 초기화 되지 않은 경우에만 Firebase 초기화
 if (!admin.apps.length) {
   admin.initializeApp({
     credential: admin.credential.cert(serviceAccount),
   });
 }
 
-/**
- * 사용자 FCM 토큰 조회 함수
- */
+// 사용자 FCM 토큰 조회 함수
 export const getUserFcmToken = async (
   userId: number
 ): Promise<string | null> => {
@@ -34,9 +30,7 @@ export const getUserFcmToken = async (
   return user?.fcmToken || null;
 };
 
-/**
- * FCM 알림 전송 - 예약된 시간에 도달 시 호출됨
- */
+// FCM 알림 전송 - 예약된 시간에 도달 시 전송
 export const sendFcmNotification = async (
   fcmToken: string,
   title: string,
@@ -53,6 +47,5 @@ export const sendFcmNotification = async (
     console.log("알림 전송 성공:", { title, body, fcmToken });
   } catch (error) {
     console.error("알림 전송 실패:", error);
-    // 에러 처리를 적절히 수행
   }
 };
