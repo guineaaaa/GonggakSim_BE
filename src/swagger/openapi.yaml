@@ -802,20 +802,19 @@ paths:
         - BearerAuth: []
       parameters:
         - in: query
-          name: provider
-          required: true
-          schema:
-            type: string
-        - in: query
           name: query
           required: true
+          description: 검색하고자 하는 자격증 이름의 부분 문자열 (한 글자씩 검색 가능)
           schema:
             type: string
-        - in: category
-          name: provider
-          required: true
+          example: "컴"
+        - in: query
+          name: category
+          required: false
+          description: 자격증 카테고리. (기본값 - 전체)
           schema:
             type: string
+          example: "전산"
       responses:
         "200":
           description: 검색 성공
@@ -830,8 +829,22 @@ paths:
                   message:
                     type: string
                     example: "검색 성공입니다."
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                          example: 10
+                        name:
+                          type: string
+                          example: "컴퓨터활용능력 1급필기"
+                        category:
+                          type: string
+                          example: "전산/IT"
         "400":
-          description: 검색 실패
+          description: 검색 실패 잘못된 요청 - 필수 파라미터 누락 or 유효하지 않은 값)
           content:
             application/json:
               schema:
@@ -843,6 +856,21 @@ paths:
                   message:
                     type: string
                     example: "검색 실패했습니다."
+          "401":
+            description: 인증 실패
+            content:
+              application/json:
+                schema:
+                  type: object
+                  properties:
+                    success:
+                      type: boolean
+                      description: 요청 성공 여부
+                      example: false
+                    message:
+                      type: string
+                      description: 에러 메시지
+                      example: "Unauthorized"
   /api/v1/notification/settings:
     post:
       summary: 방해금지 시간대 설정 API
@@ -999,7 +1027,7 @@ paths:
               schema:
                 type: object
                 properties:
-                  status: 
+                  status:
                     type: string
                     example: "success"
                   message:
