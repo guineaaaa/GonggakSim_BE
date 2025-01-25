@@ -54,10 +54,9 @@ jobs:
           ssh ggs 'cd /opt/app; npm exec prisma generate'
           ssh ggs 'cd /opt/app; npm run build'
 
-      - name: Apply prisma migrations
-        if: steps.paths-filter.outputs.prisma == 'true'
+      - name: Apply Prisma schema
         run: |
-          ssh ggs 'cd /opt/app; npm exec prisma migrate deploy'
+          ssh ggs 'cd /opt/app; npm exec prisma db push'
 
       - name: Copy systemd service file
         run: |
