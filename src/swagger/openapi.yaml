@@ -953,18 +953,44 @@ paths:
                     example: "Unauthorized Access"
   /api/v1/schedule/recommendation:
     post:
-      summary: AI시험 일정 추천 API
-      description: 시험 일정을 추천 기능
+      summary: Open AI 시험 일정 추천 API
+      description: gpt Open AI를 통해 시험 일정을 추천하는 기능
       tags:
         - Schedule
-      parameters:
-        - in: query
-          name: provider
-          required: true
-          schema:
-            type: string
       security:
         - BearerAuth: []
+      requestBody:
+        description: AI로부터 추천받기 위한 사용자의 정보
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                userId:
+                  type: integer
+                  description: 사용자 ID
+                  example: 1
+                name:
+                  type: string
+                  description: 시험 이름
+                  example: "TOEIC"
+                studyExperience:
+                  type: string
+                  description: 사용자 학습 경험
+                  example: "중급"
+                studyTimePerDay:
+                  type: string
+                  description: 하루 학습 가능 시간
+                  example: "3~4시간"
+                studyFrequency:
+                  type: string
+                  description: 하루 학습 빈도
+                  example: "매일 조금씩"
+                examGoal:
+                  type: string
+                  description: 시험 목표
+                  example: "800+"
       responses:
         "200":
           description: 추천 성공
@@ -973,12 +999,26 @@ paths:
               schema:
                 type: object
                 properties:
-                  success:
-                    type: boolean
-                    example: true
+                  status: 
+                    type: string
+                    example: "success"
                   message:
                     type: string
-                    example: "추천 성공입니다."
+                    example: "Exam schedule successfully recommended"
+                  data:
+                    type: object
+                    properties:
+                      userId:
+                        type: integer
+                        example: 1
+                      recommendedPlan:
+                        type: string
+                        example: "2주 완성 학습 플랜"
+                      examDate:
+                        type: string
+                        format: date-time
+                        example: "2025-12-08T15:00:00Z"
+
         "400":
           description: 추천 실패
           content:
