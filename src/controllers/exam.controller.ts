@@ -64,7 +64,7 @@ export const handleDeleteExam = async (
   console.log("사용자 캘린더 시험 삭제 요청");
 
   try {
-    const examId = Number(req.params.id); // url 파라미터에서 시험 id 추출
+    const examId = Number(req.params.examId); // url 파라미터에서 시험 id 추출
     const userId = Number(req.query.userId); // query 파라미터에서 사용자 id추출
 
     if (!examId || !userId) {
