@@ -4,23 +4,24 @@ import express, { Request, Response, NextFunction } from "express";
 import { PrismaSessionStore } from "@quixo3/prisma-session-store";
 import session from "express-session";
 import passport from "passport";
-import cookieParser from 'cookie-parser';
+import cookieParser from "cookie-parser";
 
-import kakaoRoutes from "./routes/kakaoRouts.js";
-import googleRoutes from "./routes/googleRouts.js";
-import naverRoutes from "./routes/naverRouts.js";
+import kakaoRoutes from "./routes/kakaoRoutes.js";
+import googleRoutes from "./routes/googleRoutes.js";
+import naverRoutes from "./routes/naverRoutes.js";
 import authRoutes from "./routes/authRoutes.js";
-import userRoutes from "./routes/userRoutes.js"
+import userRoutes from "./routes/userRoutes.js";
+import scheduleRoutes from "./routes/scheduleRoutes.js";
 
 import { prisma } from "./db.config.js";
 
 import { collectUserInfo } from "./controllers/user.controller.js";
 
 //swagger
-import swaggerUi from 'swagger-ui-express'
-import YAML from 'yamljs'
-import path from 'path';
-import { fileURLToPath } from 'url';
+import swaggerUi from "swagger-ui-express";
+import YAML from "yamljs";
+import path from "path";
+import { fileURLToPath } from "url";
 
 // controllers
 import {
@@ -29,7 +30,14 @@ import {
   handleDeleteExam,
 } from "./controllers/exam.controller.js";
 import { handleRecommendSchedule } from "./controllers/schedule.controller.js";
+import { handleGetCertifications } from "./controllers/certification.controller.js";
+import { handleDnDNotification } from "./controllers/notification.controller.js";
 
+import {
+  handleGetAllCertifications,
+  handleGetCertificationsByCategory,
+  handleGetCertificationById,
+} from "./controllers/certificateInquiry.controller.js";
 
 const __filename = fileURLToPath(import.meta.url); // 현재 파일 경로
 const __dirname = path.dirname(__filename); // 현재 디렉토리 경로
@@ -70,9 +78,8 @@ app.use((req, res, next) => {
 });
 
 // swagger 설정
-const swaggerSpec = YAML.load(path.join(__dirname, './swagger/openapi.yaml'));
-app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
-
+const swaggerSpec = YAML.load(path.join(__dirname, "./swagger/openapi.yaml"));
+app.use("/docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 // Express 기본 설정
 // cors 방식 허용
@@ -107,29 +114,41 @@ app.use(
 app.use(passport.initialize());
 app.use(passport.session());
 
-app.get('/', (req, res) => {res.send('Hello World!')}) // 기본 라우트
+app.get("/", (req, res) => {
+  res.send("Hello World!");
+}); // 기본 라우트
 
 app.use("/oauth2", googleRoutes); // 구글 인증 라우트
 app.use("/oauth2", kakaoRoutes); // 카카오 인증 라우트
 app.use("/oauth2", naverRoutes); // 네이버 인증 라우트
 app.use("/oauth2", authRoutes); // 로그아웃, 토큰 갱신, 토큰 검증, 이용약관 동의 라우트
+app.use("/api/v1/users", userRoutes); // 사용자 정보 수집 API, 유사 사용자 추천 API, 회원정보 수정 API
 
 // 캘린더 API
 app.post("/api/v1/calander/exams", handleAddExam);
 app.get("/api/v1/calander/exams", handleGetExam);
 app.delete("/api/v1/calander/exams/:id", handleDeleteExam); //삭제하려는 시험 id
 
+// 알림 방해금지 시간대 설정 API
+app.post("/api/v1/notification/settings", handleDnDNotification);
+
 // AI 시험 추천 API
 app.post("/api/v1/schedule/recommendation", handleRecommendSchedule);
+
+// 자격증 검색 API
+app.get("/api/v1/certifications/search", handleGetCertifications);
+
+//자격증 목록 조회 API
+app.get("/api/v1/certifications", handleGetAllCertifications);
+app.get(
+  "/api/v1/certifications/category/:category",
+  handleGetCertificationsByCategory
+);
+app.get("/api/v1/certifications/:id", handleGetCertificationById);
 
 app.get("/", (req, res) => {
   res.send("Hello World!");
 });
-
-// 사용자 정보 수집 API
-app.post("/api/v1/users/consent", collectUserInfo);
-app.use("/api/v1/users", userRoutes); // 사용자 정보 수집 API
-
 
 // 전역 오류 처리 미들웨어
 app.use((err: any, req: Request, res: Response, next: NextFunction) => {
@@ -143,6 +162,8 @@ app.use((err: any, req: Request, res: Response, next: NextFunction) => {
     data: err.data || null,
   });
 });
+
+app.use("/api/v1", scheduleRoutes);
 
 // 서버 실행
 app.listen(port, () => {

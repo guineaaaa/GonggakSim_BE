@@ -1,5 +1,7 @@
+# 워크플로 이름 지정
 name: test-main
 
+# 워크플로가 시작될 조건 지정
 on:
   pull_request:
   push:

@@ -12,20 +12,11 @@ const serviceAccount = {
   client_x509_cert_url: `https://www.googleapis.com/robot/v1/metadata/x509/${process.env.FIREBASE_CLIENT_EMAIL}`,
 } as admin.ServiceAccount;
 
-/**
- * FCM 초기화 (Firebase Admin SDK 설정 필요)
- */
-admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount), // Firebase 인증 정보 설정
-});
-
-/**
- * FCM 알림 메시지 구조 인터페이스
- */
-interface FcmMessage {
-  title: string; //제목
-  body: string; //본문
-  fcmToken: string; //수신자의 FCM token
+// 이미 초기화 되지 않은 경우에만 Firebase 초기화
+if (!admin.apps.length) {
+  admin.initializeApp({
+    credential: admin.credential.cert(serviceAccount),
+  });
 }
 
 // 사용자 FCM 토큰 조회 함수
@@ -39,45 +30,22 @@ export const getUserFcmToken = async (
   return user?.fcmToken || null;
 };
 
-/**
- * FCM 알림 전송 - 예약된 시간에 도달 시 호출됨
- * @param fcmToken FCM 토큰큰
- * @param title 알림 제목
- * @param body 알림 본문
- */
-export const sendFcmNotification = (
-  fcmToken: string, //수신자의 FCM 토큰
-  title: string, // 알림 제목
-  body: string // 알림 본문문
-): void => {
-  console.log("sendFCMNotification 호출");
-
-  // FCM 메세지 생성하기기
-  const message: FcmMessage = {
-    title, //메세지 제목
-    body, // 메세지 본문
-    fcmToken, // 수신자의 FCM 토큰
-  };
-
-  // Firebase Admin SDK를 통해 메세지 전송
-  admin
-    .messaging()
-    .send({
-      // 메세지 구성
-      //Firebase Cloud Messaing API에 요청 보냄
+// FCM 알림 전송 - 예약된 시간에 도달 시 전송
+export const sendFcmNotification = async (
+  fcmToken: string,
+  title: string,
+  body: string
+): Promise<void> => {
+  try {
+    await admin.messaging().send({
       notification: {
-        title: message.title, //알림 제목
-        body: message.body, // 알림 본문
+        title,
+        body,
       },
-      token: message.fcmToken, // 수신자 FCM 토큰
-    })
-    // 메세지 전송 성공 시 처리
-    .then((response) => {
-      console.log("Successfully sent message:", response);
-      console.log("알림 전송:", { title, body, fcmToken });
-    })
-    // 메세지 전송 실패 시 처리
-    .catch((error) => {
-      console.error("Error sending message:", error);
+      token: fcmToken,
     });
+    console.log("알림 전송 성공:", { title, body, fcmToken });
+  } catch (error) {
+    console.error("알림 전송 실패:", error);
+  }
 };

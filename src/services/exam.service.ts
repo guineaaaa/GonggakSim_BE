@@ -1,40 +1,52 @@
+import { prisma } from "../db.config.js";
 import {
   getExamsByUserId,
   addExam,
   getExam,
   deleteExam,
 } from "../repositories/exam.repository.js";
-import { responseFromExams } from "../dtos/exam.dto.js";
-import { scheduleRandomNotifications } from "../utils/notification.utils.js";
+import { Exam, responseFromExams } from "../dtos/exam.dto.js";
+import { sendImmediateNotification } from "../utils/notification.utils.js";
 import { getUserFcmToken } from "../utils/fcm.utils.js";
 
-// 캘린더 사용자 시험 추가
-export const addExamService = async (data: any) => {
-  // FCM 토큰이 없으면 데이터베이스에서 조회
-  if (!data.fcmToken) {
-    data.fcmToken = await getUserFcmToken(data.userId);
-  }
-  const addedExamId = await addExam({
-    id: data.id,
-    title: data.title,
-    examDate: data.examDate,
-    examRange: data.examRange,
-    memo: data.memo,
-    status: data.status,
-    userId: data.userId,
-    remindState: data.remindState,
-    fcmToken: data.fcmToken, // FCM 토큰 추가
-  });
+export const addExamService = async (data: Exam) => {
+  try {
+    // FCM 토큰 처리
+    if (!data.fcmToken) {
+      data.fcmToken = await getUserFcmToken(data.userId);
+    }
+    // fcmToken이 null이면 undefined로 변환
+    if (data.fcmToken == null) {
+      data.fcmToken = undefined;
+    }
 
-  const exam = await getExam(addedExamId);
+    // FCM 토큰 업데이트
+    if (data.fcmToken) {
+      await prisma.user.update({
+        where: { id: data.userId },
+        data: { fcmToken: data.fcmToken },
+      });
+    }
 
-  if (exam && exam.remindState && exam.fcmToken) {
-    scheduleRandomNotifications(exam, 3); // 알림 스케줄 생성성
-    console.log("시험 테스트 알림 전송 테스트");
-  } else {
-    console.error("Exam not found or no FCM Token for scheudling notification");
+    // 시험 데이터 추가
+    const addedExamId = await addExam(data);
+
+    // 추가된 시험 정보 조회
+    const exam = await getExam(addedExamId);
+
+    // 알림 처리
+    if (exam && exam.remindState) {
+      await sendImmediateNotification(exam);
+      // scheduleRandomNotifications(exam, 3); // 실제 스케쥴링 시 활성화
+    } else {
+      console.error("알림을 스케쥴링할 수 없습니다.");
+    }
+
+    return exam;
+  } catch (error) {
+    console.error("시험 추가 중 오류 발생:", error);
+    throw error;
   }
-  return exam;
 };
 
 // 캘린더 사용자 시험 조회

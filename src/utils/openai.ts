@@ -1,8 +1,6 @@
 import OpenAI from "openai";
 import dotenv from "dotenv";
-import { getDayOfWeek } from "./dateUtils.js"; // 날짜 계산을 위한 유틸리티 함수
 import dayjs from "dayjs"; // 날짜 비교 및 연산을 위한 라이브러리
-import { findSchedulesByExamName } from "../repositories/schedule.repository.js"; // repository에서 시험 일정 가져오는 함수
 
 dotenv.config();
 
@@ -15,149 +13,180 @@ class OpenAIProvider {
     });
   }
 
-  // 사용자의 조건에 맞는 값들을 입력 받아 추천 계획을 생성
+  // 사용자의 조건과 시험 정보를 기반으로 추천 계획을 생성
   async fetchRecommendedPlan({
     userId,
+    examName,
     studyExperience,
     studyTimePerDay,
-    preferredExamDays,
+    studyFrequency,
+    examGoal, // examGoal 추가
     availableSchedules,
   }: {
     userId: number; // 사용자 ID
+    examName: string; // 시험 이름
     studyExperience: string; // 학습 경험
     studyTimePerDay: string; // 하루 학습 가능 시간
-    preferredExamDays: string[]; // 선호하는 시험 요일
+    studyFrequency: string; // 공부 빈도
+    examGoal: string; // 시험 목표 (추가된 파라미터)
     availableSchedules: any[]; // 시험 일정 목록
   }): Promise<{ recommendedPlan: string; examDate: string }> {
     try {
-      // 학습 경험에 따른 예상 학습 기간(주 단위) 설정
-      let weeksRequired = 0;
-      switch (studyExperience.toLowerCase()) {
-        case "초보":
-          weeksRequired = 6; // 초보자는 6주 필요
+      const today = dayjs(); // 현재 날짜
+      const minimumWeeksToStudy = 1; // 기본 최소 학습 주차
+      const maximumWeeksToStudy = 24; // 최대 학습 가능 주차 (6개월)
+
+      // 학습 경험에 따른 보정값 설정
+      const experienceMultiplier =
+        {
+          노베이스: 3.5,
+          기초: 2.5,
+          중급: 1.8,
+          상급: 1.5,
+          전문가: 1.0,
+        }[studyExperience] || 2.5;
+
+      // 공부 빈도에 따른 학습 기간 보정값 설정
+      let frequencyMultiplier: number;
+      switch (studyFrequency) {
+        case "매일 조금씩":
+          frequencyMultiplier = 0.8; // 학습 기간을 단축
           break;
-        case "중급":
-          weeksRequired = 4; // 중급자는 4주 필요
+        case "여유 있게":
+          frequencyMultiplier = 1.0; // 기본 학습 기간
           break;
-        case "고급":
-          weeksRequired = 2; // 고급자는 2주 필요
+        case "주말에 집중적으로":
+          frequencyMultiplier = 1.2; // 학습 기간을 늘림
           break;
         default:
-          weeksRequired = 4; // 기본적으로 4주로 설정
-          break;
+          frequencyMultiplier = 1.0; // 기본값
       }
 
-      // 하루 학습 가능 시간을 숫자로 변환
-      const studyTimePerDayNumber = parseFloat(studyTimePerDay.split("~")[0]); // 시간대 범위에서 첫 번째 숫자 사용
+      // 하루 학습 시간에 따른 최소 학습 기간 조정
+      const studyTimeRanges: { [key: string]: number } = {
+        "0~1시간": 1.7,
+        "1~2시간": 1.4,
+        "2~3시간": 1.0,
+        "3~4시간": 0.7,
+        "4~5시간": 0.5,
+        "5시간 이상": 0.3,
+      };
 
-      // 사용자의 하루 학습 시간과 학습 기간을 기반으로 필요한 학습 기간 계산
-      const totalStudyHoursRequired = weeksRequired * 7 * 2; // 한 주에 2시간씩 공부한다고 가정 (기본적으로 2시간/일)
-      const studyTimeNeeded = totalStudyHoursRequired / studyTimePerDayNumber; // 학습이 완료될 때까지 필요한 일수
+      const timeMultiplier = studyTimeRanges[studyTimePerDay] || 1.0;
 
-      // 선호하는 요일을 기준으로 시험 날짜 필터링
-      const filteredSchedules = availableSchedules.filter((schedule) => {
-        const examDayOfWeek = getDayOfWeek(schedule.examDate); // 요일 추출
-        return preferredExamDays.includes(examDayOfWeek); // 선호하는 요일에 해당하는 날짜만 필터링
+      // 최소 학습 기간 계산
+      const adjustedMinimumWeeksToStudy = Math.max(
+        Math.ceil(
+          (minimumWeeksToStudy * timeMultiplier) / experienceMultiplier
+        ),
+        2
+      );
+      /** (최소학습주간 * 하루 학습 시간에 따른 기간 조정 비율)/학습 경험에 따라 조정
+       * 학습 시간이 적을수록 학습 기간이 길어진다. 학습 경험이 많을수록 학습 기간이 짧아야한다.
+       * 따라서 (minimumWeeksToStudy * timeMultiplier) / experienceMultiplier
+       */
+
+      // 유효한 시험 일정 필터링 (조정된 최소/최대 기간 적용)
+      const validSchedules = availableSchedules.filter((schedule) => {
+        const examDate = dayjs(schedule.examDate);
+        const weeksUntilExam = examDate.diff(today, "week");
+        return (
+          weeksUntilExam >= adjustedMinimumWeeksToStudy * frequencyMultiplier &&
+          weeksUntilExam <= maximumWeeksToStudy
+        );
       });
 
-      if (filteredSchedules.length === 0) {
-        throw new Error("선호하는 요일에 맞는 시험 날짜가 없습니다.");
+      if (validSchedules.length === 0) {
+        throw new Error("유효한 시험 일정이 없습니다.");
       }
 
-      // GPT에게 전달할 prompt 작성
+      // GPT 프롬프트 작성 (examGoal 포함)
       const prompt = `
-        사용자의 학습 경험은 '${studyExperience}', 하루 학습 가능 시간은 '${studyTimePerDay}'입니다.
-        선호하는 시험 요일은 ${preferredExamDays.join(", ")}입니다.
-        제공된 시험 일정은 다음과 같습니다:
-        ${filteredSchedules
-          .map(
-            (schedule) =>
-              `시험 일정: ${dayjs(schedule.examDate).format("YYYY-MM-DD dddd")}`
-          )
-          .join(", ")}.
-        이 정보를 바탕으로 가장 적합한 시험 날짜를 추천해 주세요. 날짜는 'YYYY-MM-DD' 형식으로만 응답해주세요.
+        나는 특정 자격증 시험을 준비 중인 수험생입니다. 아래 조건에 맞는 학습 계획과 적절한 시험 일정을 추천해주세요:
+
+        - 시험 이름: ${examName}
+        - 학습 경험 수준: ${studyExperience} (예: 노베이스, 기초, 중급, 상급, 전문가)
+        - 하루 학습 가능 시간: ${studyTimePerDay}시간 (예: 0~1시간, 2~3시간, 3~4시간, 5~6시간, 6시간 이상)
+        - 공부 빈도: ${studyFrequency} (매일 조금씩, 여유 있게, 주말에 집중적으로)
+        - 시험 목표: ${examGoal} (예: 합격, 상위 점수 등, 만약 구체적인 숫자의 점수가 제공될 시 숫자가 클수록 학습 기간이 오래 걸립니다.)
+        - 제공된 시험 일정 (최소 ${Math.ceil(
+          adjustedMinimumWeeksToStudy * frequencyMultiplier
+        )}주 ~ 최대 ${maximumWeeksToStudy}주 학습 가능 기간 포함):
+          ${validSchedules
+            .map(
+              (schedule) =>
+                `- 날짜: ${dayjs(schedule.examDate).format("YYYY-MM-DD dddd")}`
+            )
+            .join("\n")}
+
+        내가 기대하는 결과는 다음과 같습니다:
+        1. 제공된 시험 일정 중 학습 경험, 하루 학습 가능 시간, 공부 빈도, 목표에 맞는 최적의 시험 날짜를 추천하세요.
+        2. 선택된 시험 날짜는 현재 날짜로부터 몇 주 후인지 계산해 설명하세요.
+        3. 선택된 시험 날짜와 현재 날짜 간의 차이를 주 단위로 계산하여, "X주 완성 학습 플랜" 형식으로 반환하세요.
+
+        결과는 JSON 형식으로 반환해주세요:
+        {
+          "recommendedPlan": "(시험까지의 주 차이)주 완성 학습 플랜",
+          "examDate": "[선택된 시험 날짜: YYYY-MM-DD]"
+        }
       `;
 
-      // OpenAI API를 호출하여 GPT에게 추천 요청 (v1/chat/completions 엔드포인트 사용)
+      // OpenAI API 호출
       const gptResponse = await this.openai.chat.completions.create({
         model: "gpt-3.5-turbo",
         messages: [
           {
             role: "system",
-            content: "You are a helpful assistant that recommends study plans.",
+            content:
+              "You are a helpful assistant that recommends tailored and realistic study plans for exams based on user inputs.",
           },
           {
             role: "user",
             content: prompt,
           },
         ],
-        max_tokens: 150,
+        max_tokens: 400,
       });
 
-      // 'choices'와 'message'가 null이 아닌지 체크
-      if (
-        gptResponse.choices &&
-        gptResponse.choices.length > 0 &&
-        gptResponse.choices[0].message &&
-        gptResponse.choices[0].message.content
-      ) {
-        const gptSuggestedDate = gptResponse.choices[0].message.content.trim();
+      // GPT 응답 데이터 처리
+      const responseContent = gptResponse.choices?.[0]?.message?.content;
 
-        if (!gptSuggestedDate) {
-          throw new Error("GPT가 추천한 날짜가 없습니다.");
-        }
-        console.log("GPT가 추천한 날짜:", gptSuggestedDate);
-
-        // 날짜 형식이 포함된 경우, 정규식을 사용하여 날짜 추출
-        const dateRegex = /\d{4}-\d{2}-\d{2}/; // YYYY-MM-DD 형식의 날짜를 찾기 위한 정규식
-        const match = gptSuggestedDate.match(dateRegex);
-
-        if (!match) {
-          // "2025년 03월 15일" 형식에서 날짜 추출
-          const koreanDateRegex = /(\d{4})년 (\d{2})월 (\d{2})일/;
-          const koreanMatch = gptSuggestedDate.match(koreanDateRegex);
-          if (koreanMatch) {
-            const [_, year, month, day] = koreanMatch;
-            const formattedDate = `${year}-${month}-${day}`; // YYYY-MM-DD 형식으로 변환
-            const suitableExamDateObj = dayjs(formattedDate, "YYYY-MM-DD");
-
-            if (!suitableExamDateObj.isValid()) {
-              throw new Error("GPT가 반환한 날짜가 유효하지 않습니다.");
-            }
-
-            const weeksUntilExam = suitableExamDateObj.diff(dayjs(), "week");
-            const recommendedPlan = `${weeksUntilExam}주 완성 학습 플랜`;
-            const formattedDateString =
-              suitableExamDateObj.format("M월 D일 dddd");
-
-            return { recommendedPlan, examDate: formattedDateString }; // 추천된 계획과 날짜 반환
-          } else {
-            throw new Error("GPT가 반환한 날짜 형식이 잘못되었습니다.");
-          }
-        }
-
-        const suitableExamDateObj = dayjs(match[0], "YYYY-MM-DD");
-
-        // 날짜가 유효한지 확인
-        if (!suitableExamDateObj.isValid()) {
-          throw new Error("GPT가 반환한 날짜가 유효하지 않습니다.");
-        }
-
-        const weeksUntilExam = suitableExamDateObj.diff(dayjs(), "week");
-
-        // 추천 날짜와 현재 날짜 차이 계산
-        const recommendedPlan = `${weeksUntilExam}주 완성 학습 플랜`;
-
-        // 날짜 포맷을 'X월 X일 X요일' 형식으로 변경
-        const formattedDate = suitableExamDateObj.format("M월 D일 dddd");
-
-        return { recommendedPlan, examDate: formattedDate }; // 추천된 계획과 날짜 반환
-      } else {
-        throw new Error("GPT의 응답이 유효하지 않습니다.");
+      if (!responseContent) {
+        throw new Error("GPT가 유효한 응답을 반환하지 않았습니다.");
       }
+
+      const responseData = JSON.parse(responseContent);
+
+      if (!responseData.recommendedPlan || !responseData.examDate) {
+        throw new Error("GPT의 응답에 필요한 데이터가 없습니다.");
+      }
+
+      // 추천된 시험 날짜 검증 및 주차 재계산
+      const recommendedExamDate = dayjs(responseData.examDate);
+      if (!recommendedExamDate.isValid()) {
+        throw new Error("GPT가 잘못된 시험 날짜를 반환했습니다.");
+      }
+
+      // 주차 차이 계산
+      const weeksUntilExam = Math.ceil(
+        recommendedExamDate.diff(today, "day") / 7
+      );
+
+      if (
+        weeksUntilExam <
+          Math.ceil(adjustedMinimumWeeksToStudy * frequencyMultiplier) ||
+        weeksUntilExam > maximumWeeksToStudy
+      ) {
+        throw new Error("GPT가 추천한 시험 날짜가 유효한 범위를 벗어났습니다.");
+      }
+
+      return {
+        recommendedPlan: `${weeksUntilExam}주 완성 학습 플랜`,
+        examDate: recommendedExamDate.format("YYYY-MM-DD"),
+      };
     } catch (error: any) {
       console.error("Error while fetching recommended plan:", error.message);
-      throw new Error("OpenAI로부터 추천 계획을 가져오는데 실패했습니다.");
+      throw new Error("추천 계획을 가져오는데 실패했습니다.");
     }
   }
 }
