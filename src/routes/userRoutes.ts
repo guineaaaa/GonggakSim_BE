@@ -10,4 +10,6 @@ router.get('/suggest-info', verifyToken, getSuggestions); // 유사 사용자 �
 
 router.patch('/mypage/user-edit', verifyToken, collectUserInfo); // 회원정보 수정 API
 
+router.get('/help', verifyToken); // 도움말 확인
+
 export default router;
