@@ -1,4 +1,5 @@
 import cors from "cors";
+
 import dotenv from "dotenv";
 import express, { Request, Response, NextFunction } from "express";
 import { PrismaSessionStore } from "@quixo3/prisma-session-store";
@@ -15,13 +16,10 @@ import scheduleRoutes from "./routes/scheduleRoutes.js";
 
 import { prisma } from "./db.config.js";
 
-import { collectUserInfo } from "./controllers/user.controller.js";
-
 //swagger
 import swaggerUi from "swagger-ui-express";
 import YAML from "yamljs";
 import path from "path";
-import { fileURLToPath } from "url";
 
 // controllers
 import {
@@ -38,9 +36,6 @@ import {
   handleGetCertificationsByCategory,
   handleGetCertificationById,
 } from "./controllers/certificateInquiry.controller.js";
-
-const __filename = fileURLToPath(import.meta.url); // 현재 파일 경로
-const __dirname = path.dirname(__filename); // 현재 디렉토리 경로
 
 // 환경 변수 로드
 dotenv.config();
@@ -78,7 +73,7 @@ app.use((req, res, next) => {
 });
 
 // swagger 설정
-const swaggerSpec = YAML.load(path.join(__dirname, "./swagger/openapi.yaml"));
+const swaggerSpec = YAML.load(path.join("./src/swagger/openapi.yaml"));
 app.use("/docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 // Express 기본 설정

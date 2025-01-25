@@ -884,18 +884,111 @@ paths:
                     example: 검색 실패했습니다.
   /api/v1/notification/settings:
     post:
+      '400':
+        description: 조회 실패 (잘못된 요청)
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  type: string
+                  example: error
+                message:
+                  type: string
+                  example: Invalid request data.
+      '401':
+        description: 인증 실패 (Unauthorized)
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  type: string
+                  example: error
+                message:
+                  type: string
+                  example: Unauthorized Access
       summary: 방해금지 시간대 설정 API
       description: 방해 금지 시간대 설정 (최대 7개)
-      ags:
+      tags:
         - Notification
       security:
         - BearerAuth: []
-      parameters:
-        - in: query
-          name: provider
-          required: true
-          schema:
-            type: string
+      requestBody:
+        description: 방해 금지 설정 관련 정보
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                userId:
+                  type: integer
+                  description: 사용자 ID
+                  example: 1
+                fcmToken:
+                  type: string
+                  description: Firebase Cloud Messaging 토큰
+                  example: CLIENT_FCM_TOKEN
+                dndTimes:
+                  type: array
+                  description: 방해 금지 시간대 리스트
+                  items:
+                    type: object
+                    properties:
+                      days:
+                        type: array
+                        items:
+                          type: string
+                        example:
+                          - 월
+                          - 화
+                          - 수
+                          - 목
+                          - 금
+                      startTime:
+                        type: string
+                        example: '09:00'
+                      endTime:
+                        type: string
+                        example: '15:00'
+                selectedExams:
+                  type: array
+                  items:
+                    type: string
+                  example:
+                    - TOEIC
+                    - JPT
+                quizTypes:
+                  type: array
+                  items:
+                    type: string
+                  example:
+                    - 받아적기
+                quizRanges:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      certificationId:
+                        type: integer
+                        example: 1
+                      quizRange:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            quizRangeId:
+                              type: integer
+                              example: 101
+                            rangeTitle:
+                              type: string
+                              example: '파트1: 개념'
+                            rangeDetails:
+                              type: string
+                              example: 기초 개념 설명
       responses:
         '200':
           description: 설정 저장 성공
@@ -922,7 +1015,7 @@ paths:
                           type: object
                           properties:
                             days:
-                              type: null
+                              type: array
                               items:
                                 type: string
                               example:
@@ -948,56 +1041,30 @@ paths:
                         type: array
                         items:
                           type: string
-                      example:
-                        - 받아적기
-                    quizRanges:
-                      type: array
-                      items:
-                        type: object
-                        properties:
-                          certificationId:
-                            type: integer
-                            example: 1
-                          quizRange:
-                            type: array
-                            items:
-                              type: object
-                              properties:
-                                quizRangeId:
-                                  type: integer
-                                  example: 101
-                                rangeTitle:
-                                  type: string
-                                  example: '파트1: 개념'
-                                rangeDetails:
-                                  type: string
-                                  example: 기초 개념 설명
-        '400':
-          description: 조회 실패
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  status:
-                    type: string
-                    example: error
-                  message:
-                    type: string
-                    example: Invalid request data.
-        '401':
-          description: 조회 실패
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  status:
-                    type: string
-                    example: error
-                  message:
-                    type: string
-                    example: Unauthorized Access
+                        example:
+                          - 받아적기
+                      quizRanges:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            certificationId:
+                              type: integer
+                              example: 1
+                            quizRange:
+                              type: array
+                              items:
+                                type: object
+                                properties:
+                                  quizRangeId:
+                                    type: integer
+                                    example: 101
+                                  rangeTitle:
+                                    type: string
+                                    example: '파트1: 개념'
+                                  rangeDetails:
+                                    type: string
+                                    example: 기초 개념 설명
   /api/v1/schedule/recommendation:
     post:
       summary: Open AI 시험 일정 추천 API

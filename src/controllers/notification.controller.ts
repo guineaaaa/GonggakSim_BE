@@ -30,6 +30,7 @@ export const handleDnDNotification = async (
       data: result,
       message: result.message,
     });
+    console.log(data);
   } catch (error: any) {
     console.error("에러 발생:", error);
     next(error);
