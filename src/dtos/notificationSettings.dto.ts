@@ -1,3 +1,5 @@
+import { StringLiteral } from "typescript";
+
 export enum Day {
   일 = "일",
   월 = "월",
@@ -32,6 +34,7 @@ export interface QuizRange {
 // 알림 설정 요청 인터페이스
 export interface NotificationRequest {
   userId: number; // 사용자 ID
+  fcmToken?: string | null; // FCM토큰
   dndTimes: DnDTime[]; // 방해 금지 시간대 배열 (최대 7개)
   selectedExams: string[]; // 선택한 시험의 이름 목록
   quizTypes: QuizType[]; // 퀴즈 유형 배열

@@ -75,12 +75,12 @@ export const scheduleQuizNotifications = async (userId: number) => {
 };
 
 // 시간 문자열을 분 단위로 변환하는 함수
-const timeToMinutes = (time: string): number => {
+export const timeToMinutes = (time: string): number => {
   const [hours, minutes] = time.split(":").map(Number);
   return hours * 60 + minutes;
 };
 
-// 시험 리마인더를 위한 함수
+// 시험 리마인더를 위한 함수 (즉시 알림, 테스트용)
 export const sendImmediateNotification = async (exam: any): Promise<void> => {
   const fcmToken = await getUserFcmToken(exam.userId);
   if (fcmToken) {
@@ -100,19 +100,19 @@ const generateRandomDates = (
   endDate: Date,
   count: number
 ): Date[] => {
-  const randomDates: Date[] = [];
-  const start = startDate.getTime();
-  const end = endDate.getTime();
-
-  for (let i = 0; i < count; i++) {
-    const randomTime = start + Math.random() * (end - start);
-    randomDates.push(new Date(randomTime));
+  const uniqueDates = new Set<number>();
+  while (uniqueDates.size < count) {
+    const randomTime =
+      startDate.getTime() +
+      Math.random() * (endDate.getTime() - startDate.getTime());
+    uniqueDates.add(randomTime);
   }
-
-  return randomDates;
+  return Array.from(uniqueDates)
+    .sort((a, b) => a - b)
+    .map((timestamp) => new Date(timestamp));
 };
 
-// 랜덤 알림 스케줄링
+// 랜덤 리마인드 알림 스케줄링
 export const scheduleRandomNotifications = (
   exam: Exam,
   count: number
@@ -139,7 +139,7 @@ export const scheduleRandomNotifications = (
         await sendFcmNotification(
           fcmToken,
           `시험 알림: ${exam.title}`,
-          `시험이 다가오고 있습니다! 준비를 시작하세요.`
+          `시험이 다가오고 있습니다! 준비하세요.`
         );
       }
     });
