@@ -22,7 +22,7 @@ export const googleStrategy = new GoogleStrategy(
   {
     clientID: process.env.PASSPORT_GOOGLE_CLIENT_ID,
     clientSecret: process.env.PASSPORT_GOOGLE_CLIENT_SECRET,
-    callbackURL: "http://localhost:3000/oauth2/login/google/callback",
+    callbackURL: "/oauth2/login/google/callback",
     scope: ["email", "profile"],
     state: true,
   }, // 타입 단언 사용
@@ -39,11 +39,14 @@ export const googleStrategy = new GoogleStrategy(
 const googleVerify = async (
   accessToken: string,
   refreshToken: string,
-  profile: { emails?: { value: string }[]; displayName: string }
+  profile: { emails?: { value: string }[]; displayName: string; photos?: { value: string }[] }
 ) => {
   // 이메일 주소 추출
   const email = profile.emails?.[0]?.value;
+  const profileImage  = profile.photos?.[0]?.value || null;
   let user = await prisma.user.findFirst({ where: { email, oauthProvider: "google" } });
+
+  
 
   // 신규 사용자 여부 확인
   const isNewUser = !user;
@@ -53,6 +56,7 @@ const googleVerify = async (
       data: {
         email: email || "ggs_email",
         name: profile.displayName || "ggs_user",
+        profileImage: profileImage,
         oauthProvider: "google",
         oauthRefreshToken: refreshToken,
       },
@@ -80,7 +84,7 @@ export const kakaoStrategy = new KakaoStrategy(
   {
     clientID: process.env.PASSPORT_KAKAO_CLIENT_ID,
     clientSecret: process.env.PASSPORT_KAKAO_CLIENT_SECRET,
-    callbackURL: "http://localhost:3000/oauth2/login/kakao/callback",
+    callbackURL: "/oauth2/login/kakao/callback",
   },
   async (accessToken, refreshToken, profile, cb) => {
     try {
@@ -95,10 +99,11 @@ export const kakaoStrategy = new KakaoStrategy(
 const kakaoVerify = async (
   accessToken: string,
   refreshToken: string,
-  profile: { _json: { kakao_account: { email: string } }; displayName: string }
+  profile: { _json: { kakao_account: { email: string; profile?: { profile_image_url : string } } }; displayName: string; }
 ) => {
   // 이메일 주소 추출
   const email = profile._json.kakao_account.email;
+  const profileImg = profile._json.kakao_account.profile?.profile_image_url || null;
 
   // 해당 이메일의 유저가 있는지 확인
   let user = await prisma.user.findFirst({ where: { email, oauthProvider: "kakao" }});
@@ -112,6 +117,7 @@ const kakaoVerify = async (
       data: {
         email: email || "ggs_email",
         name: profile.displayName || "ggs_user",
+        profileImage: profileImg,
         oauthProvider: "kakao",
         oauthRefreshToken: refreshToken,
       },
@@ -140,7 +146,7 @@ export const naverStrategy = new NaverStrategy(
   {
     clientID: process.env.PASSPORT_NAVER_CLIENT_ID,
     clientSecret: process.env.PASSPORT_NAVER_CLIENT_SECRET,
-    callbackURL: "http://localhost:3000/oauth2/login/naver/callback",
+    callbackURL: "/oauth2/login/naver/callback",
   },
   async (accessToken, refreshToken, profile, cb) => {
     try {
