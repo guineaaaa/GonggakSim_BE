@@ -51,11 +51,11 @@ export const logoutFromSNS = async (provider: string): Promise<string> => {
     // 로그아웃 url
     let logoutUrl = "";
     if (provider === "kakao") {
-      logoutUrl = `https://kauth.kakao.com/oauth/logout?client_id=${process.env.PASSPORT_KAKAO_CLIENT_ID}&logout_redirect_uri=http://localhost:3000/oauth2/login/kakao`;
+      logoutUrl = `https://kauth.kakao.com/oauth/logout?client_id=${process.env.PASSPORT_KAKAO_CLIENT_ID}&logout_redirect_uri=/oauth2/login`;
     } else if (provider === "google") {
-      logoutUrl = `https://accounts.google.com/Logout?continue=${encodeURIComponent("http://localhost:3000/oauth2/login/google")}`;
+      logoutUrl = `https://accounts.google.com/Logout?continue=${encodeURIComponent("/oauth2/login")}`;
     } else if (provider === "naver") {
-      logoutUrl = "https://nid.naver.com/nidlogin.logout";
+      logoutUrl = "https://nid.naver.com/nidlogin.logout"; // 클라이언트측에서 리디렉션 처리
     }
   
     return logoutUrl;

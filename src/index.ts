@@ -117,12 +117,12 @@ app.use("/oauth2", googleRoutes); // 구글 인증 라우트
 app.use("/oauth2", kakaoRoutes); // 카카오 인증 라우트
 app.use("/oauth2", naverRoutes); // 네이버 인증 라우트
 app.use("/oauth2", authRoutes); // 로그아웃, 토큰 갱신, 토큰 검증, 이용약관 동의 라우트
-app.use("/api/v1/users", userRoutes); // 사용자 정보 수집 API, 유사 사용자 추천 API, 회원정보 수정 API
+app.use("/api/v1/users", userRoutes); // 사용자 정보 수집 API, 유사 사용자 추천 API, 회원정보 수정 API, 도움말 확인
 
 // 캘린더 API
 app.post("/api/v1/calander/exams", handleAddExam);
 app.get("/api/v1/calander/exams", handleGetExam);
-app.delete("/api/v1/calander/exams/:id", handleDeleteExam); //삭제하려는 시험 id
+app.delete("/api/v1/calander/exams/:examId", handleDeleteExam); //삭제하려는 시험 id
 
 // 알림 방해금지 시간대 설정 API
 app.post("/api/v1/notification/settings", handleDnDNotification);

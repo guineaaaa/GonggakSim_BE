@@ -6,7 +6,7 @@ info:
   license:
     name: MIT
 servers:
-  - url: 'http://localhost:3000/'
+  - url: "http://localhost:3000/"
 paths:
   /oauth2/refresh-token:
     post:
@@ -17,7 +17,7 @@ paths:
       security:
         - BearerAuth: []
       responses:
-        '200':
+        "200":
           description: 토큰 갱신 성공
           content:
             application/json:
@@ -30,7 +30,7 @@ paths:
                   message:
                     type: string
                     example: "토큰이 성공적으로 갱신되었습니다."
-        '404':
+        "404":
           description: 인증 실패
           content:
             application/json:
@@ -43,7 +43,7 @@ paths:
                   message:
                     type: string
                     example: "인증이 필요합니다."
-        '400':
+        "400":
           description: 토큰 갱신 실패
           content:
             application/json:
@@ -71,7 +71,7 @@ paths:
       security:
         - BearerAuth: []
       responses:
-        '200':
+        "200":
           description: 로그인 성공
           content:
             application/json:
@@ -81,7 +81,7 @@ paths:
                   message:
                     type: string
                     example: "로그인 완료"
-        '500':
+        "500":
           description: 서버 에러
           content:
             application/json:
@@ -109,7 +109,7 @@ paths:
       security:
         - BearerAuth: []
       responses:
-        '200':
+        "200":
           description: 로그아웃 성공
           content:
             application/json:
@@ -122,7 +122,7 @@ paths:
                   snsLogoutUrl:
                     type: string
                     example: "https://accounts.google.com/Logout?continue=http://localhost:3000/oauth2/login/google"
-        '500':
+        "500":
           description: 서버 에러
           content:
             application/json:
@@ -150,7 +150,7 @@ paths:
       security:
         - BearerAuth: []
       responses:
-        '200':
+        "200":
           description: 회원탈퇴 성공
           content:
             application/json:
@@ -160,7 +160,7 @@ paths:
                   message:
                     type: string
                     example: "회원탈퇴 완료"
-        '500':
+        "500":
           description: 서버 에러
           content:
             application/json:
@@ -188,7 +188,7 @@ paths:
       security:
         - BearerAuth: []
       responses:
-        '200':
+        "200":
           description: 이용약관 동의 성공
           content:
             application/json:
@@ -201,7 +201,7 @@ paths:
                   message:
                     type: string
                     example: "이용약관 동의 완료"
-        '500':
+        "500":
           description: 서버 에러
           content:
             application/json:
@@ -219,7 +219,7 @@ paths:
       summary: 사용자 정보 수집 API
       description: 사용자 정보를 수집합니다.
       tags:
-        - Users
+        - User
       parameters:
         - in: query
           name: provider
@@ -257,7 +257,7 @@ paths:
                 employmentStatus: "재직 중"
                 employCategory: "전산"
       responses:
-        '200':
+        "200":
           description: 정보 업데이트 성공
           content:
             application/json:
@@ -294,7 +294,7 @@ paths:
                       category: ["디자인/예술", "IT/개발"]
                       employmentStatus: "재직 중"
                       employCategory: "전산"
-        '400':
+        "400":
           description: 정보 업데이트 실패
           content:
             application/json:
@@ -306,13 +306,14 @@ paths:
                     example: false
                   message:
                     type: string
-                    example: "사용자 정보 저장 중 오류가 발생했습니다."
+                    example: "사용자 정보 저장 중 오류가 발생했습니다."              
+  
   /api/v1/users/suggest-info:
     get:
       summary: 유사 사용자 시험 추천 API
       description: 유사 사용자 시험 추천
       tags:
-        - Users
+        - User
       parameters:
         - in: query
           name: provider
@@ -322,7 +323,7 @@ paths:
       security:
         - BearerAuth: []
       responses:
-        '200':
+        "200":
           description: 시험 추천 성공
           content:
             application/json:
@@ -344,7 +345,7 @@ paths:
                           type: string
                     example:
                       Certification: ["TOEIC, 컴퓨터활용 1급"]
-        '400':
+        "400":
           description: 유사 사용자 시험 추천 실패
           content:
             application/json:
@@ -362,7 +363,7 @@ paths:
       summary: 마이페이지 조회 API
       description: 사용자 정보 일부를 반환합니다.
       tags:
-        - Users
+        - User
       parameters:
         - in: query
           name: provider
@@ -372,7 +373,7 @@ paths:
       security:
         - BearerAuth: []
       responses:
-        '200':
+        "200":
           description: 마이페이지 조회 성공
           content:
             application/json:
@@ -415,7 +416,7 @@ paths:
                       category: ["디자인/예술", "IT/개발"]
                       employmentStatus: "재직 중"
                       employCategory: "전산"
-        '400':
+        "400":
           description: 정보 업데이트 실패
           content:
             application/json:
@@ -427,13 +428,54 @@ paths:
                     example: false
                   message:
                     type: string
-                    example: "사용자 정보 저장 중 오류가 발생했습니다." 
+                    example: "사용자 정보 저장 중 오류가 발생했습니다."
+  /api/v1/users/help:
+    get:
+      summary: 도움말 조회 API
+      description: 도움말 페이지가 조회됩니다. //swagger에서는 불가능함
+      tags:
+        - User
+      parameters:
+        - in: query
+          name: provider
+          required: true
+          schema:
+            type: string
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: 조회 성공
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: "조회 완료"
+        "500":
+          description: 서버 에러
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: "조회 실패"                  
   /api/v1/users/mypage/user-edit:
     patch:
       summary: 사용자 정보 수정 API
       description: 사용자 정보를 수정합니다.
       tags:
-        - Users
+        - User
       parameters:
         - in: query
           name: provider
@@ -471,7 +513,7 @@ paths:
                 employmentStatus: "재직 중"
                 employCategory: "전산"
       responses:
-        '200':
+        "200":
           description: 정보 업데이트 성공
           content:
             application/json:
@@ -508,7 +550,7 @@ paths:
                       category: ["디자인/예술", "IT/개발"]
                       employmentStatus: "재직 중"
                       employCategory: "전산"
-        '400':
+        "400":
           description: 정보 업데이트 실패
           content:
             application/json:
@@ -520,7 +562,7 @@ paths:
                     example: false
                   message:
                     type: string
-                    example: "사용자 정보 저장 중 오류가 발생했습니다."  
+                    example: "사용자 정보 저장 중 오류가 발생했습니다."
   /api/v1/certifications:
     get:
       summary: 자격증 전체 목록 조회 API
@@ -536,7 +578,7 @@ paths:
       security:
         - BearerAuth: []
       responses:
-        '200':
+        "200":
           description: 전체 목록 조회 성공
           content:
             application/json:
@@ -549,7 +591,7 @@ paths:
                   message:
                     type: string
                     example: "조회 성공입니다."
-        '400':
+        "400":
           description: 목록 조회 실패
           content:
             application/json:
@@ -582,7 +624,7 @@ paths:
       security:
         - BearerAuth: []
       responses:
-        '200':
+        "200":
           description: 조회 성공
           content:
             application/json:
@@ -595,7 +637,7 @@ paths:
                   message:
                     type: string
                     example: "조회 성공입니다."
-        '400':
+        "400":
           description: 조회 실패
           content:
             application/json:
@@ -628,7 +670,7 @@ paths:
       security:
         - BearerAuth: []
       responses:
-        '200':
+        "200":
           description: 조회 성공
           content:
             application/json:
@@ -641,7 +683,7 @@ paths:
                   message:
                     type: string
                     example: "조회 성공입니다."
-        '400':
+        "400":
           description: 조회 실패
           content:
             application/json:
@@ -674,7 +716,7 @@ paths:
       security:
         - BearerAuth: []
       responses:
-        '200':
+        "200":
           description: 조회 성공
           content:
             application/json:
@@ -687,7 +729,7 @@ paths:
                   message:
                     type: string
                     example: "조회 성공입니다."
-        '400':
+        "400":
           description: 조회 실패
           content:
             application/json:
@@ -720,7 +762,7 @@ paths:
       security:
         - BearerAuth: []
       responses:
-        '200':
+        "200":
           description: 알림신청 성공
           content:
             application/json:
@@ -733,7 +775,7 @@ paths:
                   message:
                     type: string
                     example: "알림신청 성공입니다."
-        '400':
+        "400":
           description: 알림신청 실패
           content:
             application/json:
@@ -745,7 +787,7 @@ paths:
                     example: false
                   message:
                     type: string
-                    example: "알림신청 실패했습니다." 
+                    example: "알림신청 실패했습니다."
   /api/v1/certifications/{certificationId}/apply:
     get:
       summary: 시험 접수 API
@@ -766,7 +808,7 @@ paths:
       security:
         - BearerAuth: []
       responses:
-        '200':
+        "200":
           description: 접수 성공
           content:
             application/json:
@@ -779,7 +821,7 @@ paths:
                   message:
                     type: string
                     example: "조회 성공입니다."
-        '400':
+        "400":
           description: 접수 실패
           content:
             application/json:
@@ -791,7 +833,7 @@ paths:
                     example: false
                   message:
                     type: string
-                    example: "조회 실패했습니다."                                       
+                    example: "조회 실패했습니다."
   /api/v1/certifications/search:
     get:
       summary: 자격증 검색 API
@@ -802,22 +844,21 @@ paths:
         - BearerAuth: []
       parameters:
         - in: query
-          name: provider
-          required: true
-          schema:
-            type: string
-        - in: query
           name: query
           required: true
+          description: 검색하고자 하는 자격증 이름의 부분 문자열 (한 글자씩 검색 가능)
           schema:
             type: string
-        - in: category
-          name: provider
-          required: true
+          example: "컴"
+        - in: query
+          name: category
+          required: false
+          description: 자격증 카테고리. (기본값 - 전체)
           schema:
             type: string
+          example: "전산"
       responses:
-        '200':
+        "200":
           description: 검색 성공
           content:
             application/json:
@@ -830,8 +871,22 @@ paths:
                   message:
                     type: string
                     example: "검색 성공입니다."
-        '400':
-          description: 검색 실패
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                          example: 10
+                        name:
+                          type: string
+                          example: "컴퓨터활용능력 1급필기"
+                        category:
+                          type: string
+                          example: "전산/IT"
+        "400":
+          description: 검색 실패 잘못된 요청 - 필수 파라미터 누락 or 유효하지 않은 값)
           content:
             application/json:
               schema:
@@ -843,22 +898,96 @@ paths:
                   message:
                     type: string
                     example: "검색 실패했습니다."
+          "401":
+            description: 인증 실패
+            content:
+              application/json:
+                schema:
+                  type: object
+                  properties:
+                    success:
+                      type: boolean
+                      description: 요청 성공 여부
+                      example: false
+                    message:
+                      type: string
+                      description: 에러 메시지
+                      example: "Unauthorized"
   /api/v1/notification/settings:
     post:
       summary: 방해금지 시간대 설정 API
       description: 방해 금지 시간대 설정 (최대 7개)
-      ags:
+      tags:
         - Notification
       security:
         - BearerAuth: []
-      parameters:
-        - in: query
-          name: provider
-          required: true
-          schema:
-            type: string
+      requestBody:
+        description: 방해 금지 설정 관련 정보
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                userId:
+                  type: integer
+                  description: 사용자 ID
+                  example: 1
+                fcmToken:
+                  type: string
+                  description: Firebase Cloud Messaging 토큰
+                  example: "CLIENT_FCM_TOKEN"
+                dndTimes:
+                  type: array
+                  description: 방해 금지 시간대 리스트
+                  items:
+                    type: object
+                    properties:
+                      days:
+                        type: array
+                        items:
+                          type: string
+                        example: ["월", "화", "수", "목", "금"]
+                      startTime:
+                        type: string
+                        example: "09:00"
+                      endTime:
+                        type: string
+                        example: "15:00"
+                selectedExams:
+                  type: array
+                  items:
+                    type: string
+                  example: ["TOEIC", "JPT"]
+                quizTypes:
+                  type: array
+                  items:
+                    type: string
+                  example: ["받아적기"]
+                quizRanges:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      certificationId:
+                        type: integer
+                        example: 1
+                      quizRange:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            quizRangeId:
+                              type: integer
+                              example: 101
+                            rangeTitle:
+                              type: string
+                              example: "파트1: 개념"
+                            rangeDetails:
+                              type: string
+                              example: "기초 개념 설명"
       responses:
-        '200':
+        "200":
           description: 설정 저장 성공
           content:
             application/json:
@@ -883,7 +1012,7 @@ paths:
                           type: object
                           properties:
                             days:
-                              type: 
+                              type: array
                               items:
                                 type: string
                               example: ["월", "화", "수", "목", "금"]
@@ -902,84 +1031,125 @@ paths:
                         type: array
                         items:
                           type: string
-                      example: ["받아적기"]
-                    quizRanges:
-                      type: array
-                      items:
-                        type: object
-                        properties:
-                          certificationId:
-                            type: integer
-                            example: 1
-                          quizRange:
-                            type: array
-                            items:
-                              type: object
-                              properties:
-                                quizRangeId:
-                                  type: integer
-                                  example: 101
-                                rangeTitle:
-                                  type: string
-                                  example: "파트1: 개념"
-                                rangeDetails:
-                                  type: string
-                                  example: "기초 개념 설명"
-        '400':
-          description: 조회 실패
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  status:
-                    type: string
-                    example: "error"
-                  message:
-                    type: string
-                    example: "Invalid request data."          
-        '401':
-          description: 조회 실패
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  status:
-                    type: string
-                    example: "error"
-                  message:
-                    type: string
-                    example: "Unauthorized Access"  
+                        example: ["받아적기"]
+                      quizRanges:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            certificationId:
+                              type: integer
+                              example: 1
+                            quizRange:
+                              type: array
+                              items:
+                                type: object
+                                properties:
+                                  quizRangeId:
+                                    type: integer
+                                    example: 101
+                                  rangeTitle:
+                                    type: string
+                                    example: "파트1: 개념"
+                                  rangeDetails:
+                                    type: string
+                                    example: "기초 개념 설명"
+      "400":
+        description: 조회 실패 (잘못된 요청)
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  type: string
+                  example: "error"
+                message:
+                  type: string
+                  example: "Invalid request data."
+      "401":
+        description: 인증 실패 (Unauthorized)
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  type: string
+                  example: "error"
+                message:
+                  type: string
+                  example: "Unauthorized Access"
+
   /api/v1/schedule/recommendation:
     post:
-      summary: AI시험 일정 추천 API
-      description: 시험 일정을 추천 기능
+      summary: Open AI 시험 일정 추천 API
+      description: gpt Open AI를 통해 시험 일정을 추천하는 기능
       tags:
         - Schedule
-      parameters:
-        - in: query
-          name: provider
-          required: true
-          schema:
-            type: string
       security:
         - BearerAuth: []
+      requestBody:
+        description: AI로부터 추천받기 위한 사용자의 정보
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                userId:
+                  type: integer
+                  description: 사용자 ID
+                  example: 1
+                name:
+                  type: string
+                  description: 시험 이름
+                  example: "TOEIC"
+                studyExperience:
+                  type: string
+                  description: 사용자 학습 경험
+                  example: "중급"
+                studyTimePerDay:
+                  type: string
+                  description: 하루 학습 가능 시간
+                  example: "3~4시간"
+                studyFrequency:
+                  type: string
+                  description: 하루 학습 빈도
+                  example: "매일 조금씩"
+                examGoal:
+                  type: string
+                  description: 시험 목표
+                  example: "800+"
       responses:
-        '200':
+        "200":
           description: 추천 성공
           content:
             application/json:
               schema:
                 type: object
                 properties:
-                  success:
-                    type: boolean
-                    example: true
+                  status:
+                    type: string
+                    example: "success"
                   message:
                     type: string
-                    example: "추천 성공입니다."
-        '400':
+                    example: "Exam schedule successfully recommended"
+                  data:
+                    type: object
+                    properties:
+                      userId:
+                        type: integer
+                        example: 1
+                      recommendedPlan:
+                        type: string
+                        example: "2주 완성 학습 플랜"
+                      examDate:
+                        type: string
+                        format: date-time
+                        example: "2025-12-08T15:00:00Z"
+
+        "400":
           description: 추천 실패
           content:
             application/json:
@@ -992,35 +1162,72 @@ paths:
                   message:
                     type: string
                     example: "추천 실패했습니다."
+
   /api/v1/calander/exams:
     post:
       summary: 캘린더 사용자 시험 추가 API
-      description: 사용자 개인 시험 추가 기능
+      description: 사용자 개인 시험 정보를 캘린더에 추가하는 기능 제공.
       tags:
         - Exam
       security:
         - BearerAuth: []
-      parameters:
-        - in: query
-          name: provider
-          required: true
-          schema:
-            type: string
+      requestBody:
+        description: 캘린더에 추가할 시험 정보
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                  description: 시험의 이름
+                  example: 테스트 시험
+                examDate:
+                  type: string
+                  format: date-time
+                  description: ISO 8601 형식의 시험 날짜 및 시간
+                  example: 2025-01-31T10:00:00Z
+                examRange:
+                  type: string
+                  description: 시험의 범위
+                  example: 테스트 범위
+                memo:
+                  type: string
+                  description: 시험에 대한 추가적인 메모
+                  example: 테스트 1회독
+                status:
+                  type: string
+                  description: 시험 준비 상태 (진척도)
+                  example: 20%
+                userId:
+                  type: integer
+                  description: 시험을 추가하는 사용자의 ID
+                  example: 1
+                remindState:
+                  type: boolean
+                  description: 리마인드 알림 설정 여부
+                  example: true
+                fcmToken:
+                  type: string
+                  description: Firebase Cloud Messaging 토큰
+                  example: USER_FCM_TOKEN
       responses:
-        '200':
+        "200":
           description: 시험 추가 성공
           content:
             application/json:
               schema:
                 type: object
                 properties:
-                  success:
-                    type: boolean
-                    example: true
-                  message:
+                  resultType:
                     type: string
-                    example: "시험 추가 성공입니다."
-        '400':
+                    description: 처리 결과 유형
+                    example: SUCCESS
+                  success:
+                    type: object
+                    description: 추가된 시험 정보
+        "400":
           description: 시험 추가 실패
           content:
             application/json:
@@ -1032,29 +1239,39 @@ paths:
                     example: false
                   message:
                     type: string
-                    example: "시험 추가 실패했습니다."   
-  /api/v1/calander/exams/{userId}:
+                    example: "시험 추가 실패했습니다."
+        "401":
+          description: 인증 실패
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    description: 요청 성공 여부
+                    example: false
+                  message:
+                    type: string
+                    description: 에러 메시지
+                    example: "Unauthorized"
     get:
       summary: 캘린더 사용자 시험 조회 API
-      description: 캘린더 사용자 시험 목록 조회 기능
+      description: 특정 사용자의 시험 목록을 조회하는 API
       tags:
         - Exam
       security:
         - BearerAuth: []
       parameters:
         - in: query
-          name: provider
-          required: true
-          schema:
-            type: string
-        - in: path
           name: userId
           required: true
           schema:
-            type: Integer
+            type: integer
+          description: 조회하려는 사용자의 ID
       responses:
-        '200':
-          description: 조회 성공
+        "200":
+          description: 성공적으로 시험 목록을 반환합니다
           content:
             application/json:
               schema:
@@ -1063,11 +1280,33 @@ paths:
                   success:
                     type: boolean
                     example: true
-                  message:
-                    type: string
-                    example: "조회 성공입니다."
-        '400':
-          description: 조회 실패
+                  data:
+                    type: array
+                    description: 시험 목록 데이터
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                          example: 1
+                        title:
+                          type: string
+                          example: SQLD
+                        examDate:
+                          type: string
+                          format: date-time
+                          example: 2025-01-15T10:00:00Z
+                        examRange:
+                          type: string
+                          example: MySQL
+                        memo:
+                          type: string
+                          example: mysql 공부하기
+                        status:
+                          type: string
+                          example: 40%
+        "400":
+          description: 잘못된 요청
           content:
             application/json:
               schema:
@@ -1078,8 +1317,23 @@ paths:
                     example: false
                   message:
                     type: string
-                    example: "조회회 실패했습니다."  
-  /api/v1/calander/exams/{examId}/{userId}:
+                    example: "User ID is required"
+        "401":
+          description: 인증 실패
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    description: 요청 성공 여부
+                    example: false
+                  message:
+                    type: string
+                    description: 에러 메시지
+                    example: "Unauthorized"
+  /api/v1/calander/exams/{examId}:
     delete:
       summary: 캘린더 시험 삭제 API
       description: 캘린더에 등록된 시험 삭제 기능
@@ -1088,23 +1342,22 @@ paths:
       security:
         - BearerAuth: []
       parameters:
-        - in: query
-          name: provider
-          required: true
-          schema:
-            type: string
         - in: path
           name: examId
           required: true
           schema:
-            type: Integer
-        - in: path
+            type: integer
+          description: 삭제하려는 시험의 ID
+          example: 1
+        - in: query
           name: userId
           required: true
           schema:
-            type: Integer
+            type: integer
+          description: 삭제하려는 시험의 사용자 ID
+          example: 1
       responses:
-        '200':
+        "200":
           description: 삭제 성공
           content:
             application/json:
@@ -1113,12 +1366,14 @@ paths:
                 properties:
                   success:
                     type: boolean
+                    description: 요청 성공 여부
                     example: true
                   message:
                     type: string
-                    example: "삭제 성공입니다."
-        '400':
-          description: 삭제 실패
+                    description: 응답 메세지
+                    example: "Exam deleted successfully"
+        "400":
+          description: 삭제 실패 (잘못된 요청 - 필수 파라미터 누락 or 유효하지 않은 값)
           content:
             application/json:
               schema:
@@ -1127,10 +1382,26 @@ paths:
                   success:
                     type: boolean
                     example: false
+                    description: 요청 성공 여부
                   message:
                     type: string
-                    example: "삭제 실패했습니다."                                                                                           
-
+                    example: "삭제 실패했습니다."
+                    description: 에러메세지
+        "401":
+          description: 인증 실패
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    description: 요청 성공 여부
+                    example: false
+                  message:
+                    type: string
+                    description: 에러 메시지
+                    example: "Unauthorized"
 components:
   securitySchemes:
     BearerAuth:
