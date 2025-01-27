@@ -374,7 +374,7 @@ paths:
         - BearerAuth: []
       responses:
         "200":
-          description: 마이페이지 조회 성공
+          description: 응답 성공
           content:
             application/json:
               schema:
@@ -385,39 +385,37 @@ paths:
                     example: true
                   message:
                     type: string
-                    example: "조회 성공 했습니다."
+                    example: "마이페이지 조회 완료"
                   data:
                     type: object
                     properties:
-                      id:
-                        type: integer
                       name:
                         type: string
-                      age:
-                        type: integer
-                      department:
+                        exmaple: "홍길동"
+                      profileImage:
                         type: string
-                      grade:
-                        type: string
-                      category:
+                        example: "https://example.com/profile.jpg"
+                      categories:
                         type: array
                         items:
                           type: string
-                      employmentStatus:
-                        type: string
-                      employCategory:
-                        type: string
-                    example:
-                      id: 1
-                      name: "홍길동"
-                      age: 25
-                      department: "소프트웨어학과"
-                      grade: "졸업"
-                      category: ["디자인/예술", "IT/개발"]
-                      employmentStatus: "재직 중"
-                      employCategory: "전산"
+                          example: ["프로그래밍", "데이터 분석"]
+                      closestExams:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            name:
+                              type: string
+                              example: "정보처리기사"
+                            date:
+                              type: string
+                              example: "2025-02-15T00:00:00.000Z"
+                            dDay:
+                              type: number
+                              example: 20
         "400":
-          description: 정보 업데이트 실패
+          description: 응답 에러
           content:
             application/json:
               schema:
@@ -428,7 +426,7 @@ paths:
                     example: false
                   message:
                     type: string
-                    example: "사용자 정보 저장 중 오류가 발생했습니다."
+                    example: "마이페이지 조회 실패"
   /api/v1/users/help:
     get:
       summary: 도움말 조회 API
@@ -445,7 +443,7 @@ paths:
         - BearerAuth: []
       responses:
         "200":
-          description: 조회 성공
+          description: 응답 성공
           content:
             application/json:
               schema:
@@ -456,9 +454,9 @@ paths:
                     example: false
                   message:
                     type: string
-                    example: "조회 완료"
-        "500":
-          description: 서버 에러
+                    example: "도움말 조회 완료"
+        "400":
+          description: 응답 에러
           content:
             application/json:
               schema:
@@ -469,7 +467,7 @@ paths:
                     example: false
                   message:
                     type: string
-                    example: "조회 실패"                  
+                    example: "도움말 조회 실패"                  
   /api/v1/users/mypage/user-edit:
     patch:
       summary: 사용자 정보 수정 API
