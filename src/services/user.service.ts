@@ -1,7 +1,6 @@
 import { prisma } from "../db.config.js";
 import { updateConsent, SuggestionRepository } from "../repositories/user.repository.js"
 import { SuggestInfoDto } from '../dtos/user.dto.js'
-import { StatusCodes } from "http-status-codes";
 
 // 사용자 정보수집 service
 export const userConsent = async (accessEmail: string, data: any) => {
@@ -66,3 +65,19 @@ export class SuggestionService {
       }));
     }
 }
+
+// 마이페이지 조회
+export const getClosestExams = async (userId: number): Promise<any[]> => {
+  const currentDate = new Date();
+  const exams = await prisma.exam.findMany({
+    where: { userId, examDate: { gte: currentDate }},
+    orderBy: { examDate: 'asc' },
+    take: 2,
+  });
+
+  return exams.map((exam) => ({
+    name: exam.title,
+    date: exam.examDate,
+    dDay: Math.ceil((exam.examDate.getTime() - currentDate.getTime()) / (1000 * 60 * 60 * 24)),
+  }));
+};
