@@ -100,3 +100,20 @@ export const getUserPage = async (req: Request, res: Response) => {
     res.status(StatusCodes.BAD_REQUEST).json({ success: false, message: '마이페이지 조회 실패'});
   }
 }
+
+// 도움말 조회 API
+export const getHelpDoc = async (req: Request, res: Response) => {
+  try{
+    const { user } = req as AuthRequest; // AuthRequest와 같은 타입을 정의해야 정확합니다.
+    const userEmail = user?.email;
+
+    if (!userEmail) {
+      res.status(StatusCodes.UNAUTHORIZED).json({ success: false, message: '인증이 필요합니다.' });
+    }
+    
+    res.status(StatusCodes.OK).json({ success: true, message: "도움말 조회 완료" });
+  } catch (err) {
+    console.error(err);
+    res.status(StatusCodes.BAD_REQUEST).json({ success: false, message: '도움말 조회 실패'});
+  }
+}
