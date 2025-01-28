@@ -13,14 +13,12 @@ passport.deserializeUser<{ email: string; name: string }>(
 
 // 카카오 인증 라우트
 router.get(
-    // #swagger.tags = ["Kakao/Google/Naver"]
     "/login/naver",
     passport.authenticate("naver")
 );
 
 // 네이버 인증 콜백 라우트
 router.get(
-    // #swagger.ignore = true
     "/login/naver/callback",
     passport.authenticate("naver", {
       failureRedirect: "/login/naver",
@@ -28,25 +26,21 @@ router.get(
     }),
     (req, res) => {
       // 사용자 데이터 가져오기
-      const user = req.user as { email: string; accessToken: string; isNewUser: boolean };
-      const { accessToken, isNewUser } = user;
+      const user = req.user as { email: string; accessToken: string; refreshToken: string; isNewUser: boolean };
+      const { accessToken, refreshToken, isNewUser } = user;
 
       // 데이터 확인
       console.log(user);
-      
-      // 액세스 토큰 쿠키 저장
-      res.cookie("accessToken", accessToken, {
-        httpOnly: true,
-        //secure: process.env.NODE_ENV === "production",
-        maxAge: 60 * 60 * 10000, // 1시간 1000
-        sameSite: "lax", // "strict"는 https 환경
-        path: '/' //모든 경로에서 쿠키 접근 가능
-      });
   
-      // 리다이렉트 처리
-      const redirectURL = isNewUser ? "/oauth2/consent" : "/";
-      res.redirect(redirectURL);
-    }
+      // 클라이언트(Android)에 JSON으로 응답 -> android쪽에서 isNewUser로 /consent or /home 으로 리다이렉트
+      res.status(200).json({
+        success: true,
+        message: "로그인 성공",
+        accessToken,
+        refreshToken,
+        isNewUser,
+    });
+  }
 );
 
 export default router;

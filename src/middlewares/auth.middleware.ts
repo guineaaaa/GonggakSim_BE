@@ -83,10 +83,10 @@ const fetchUserInfo = async (provider: string, token: string): Promise<UserInfo>
 // 미들웨어 함수
 export const verifyToken = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    // 쿠키에서 토큰 읽기
-    const token = req.cookies['accessToken'];
+    // 클라이언트에 저장된 토큰 읽기
+    const accessToken  = req.headers.authorization;
 
-    if (!token) {
+    if (!accessToken) {
       return res.status(StatusCodes.UNAUTHORIZED).json({
         success: false,
         message: "인증 토큰이 필요합니다.",
@@ -103,7 +103,7 @@ export const verifyToken = async (req: Request, res: Response, next: NextFunctio
     }
 
     // 사용자 정보 가져오기
-    const userInfo = await fetchUserInfo(oauthProvider, token);
+    const userInfo = await fetchUserInfo(oauthProvider, accessToken);
 
     // 요청 객체에 사용자 정보 추가
     req.user = userInfo;
@@ -115,6 +115,40 @@ export const verifyToken = async (req: Request, res: Response, next: NextFunctio
     return res.status(StatusCodes.UNAUTHORIZED).json({
       success: false,
       message: "유효하지 않은 토큰입니다.",
+    });
+  }
+};
+
+export const verifyRefreshToken = async (req: Request, res: Response, next: NextFunction) => {
+  try{
+    const refreshToken = req.headers.authorization;
+
+    if (!refreshToken) {
+      return res.status(400).json({ 
+        success: false, 
+        message: "리프레시 토큰이 필요합니다." 
+      }) as any;
+    }
+
+    // 사용자 정보 가져오기 (예: Kakao, Google 등)
+    const oauthProvider = req.query.provider as string; // 클라이언트에서 전달받은 OAuth 제공자
+    if (!oauthProvider) {
+      return res.status(StatusCodes.BAD_REQUEST).json({
+        success: false,
+        message: "OAuth 제공자가 필요합니다.",
+      });
+    }
+
+    // 사용자 정보 가져오기
+    const userInfo = await fetchUserInfo(oauthProvider, refreshToken);
+
+    req.user = userInfo;
+
+    next(); // 다음 미들웨어 실행
+  } catch (error) {
+    return res.status(401).json({
+      success: false,
+      message: "리프레시 토큰이 만료되었습니다. 다시 로그인하세요."
     });
   }
 };
