@@ -1,5 +1,5 @@
 import express, { Request, Response } from "express";
-import { verifyToken } from "../middlewares/auth.middleware.js";
+import { verifyToken, verifyRefreshToken } from "../middlewares/auth.middleware.js";
 import { refreshUserToken, logoutUser, deleteUserAccount, } from '../controllers/auth.controller.js';
 import { updateAgreement } from '../controllers/consent.controller.js';
 
@@ -14,8 +14,8 @@ router.post("/verify-token", verifyToken, async(req: Request, res: Response) => 
   });
 });
 
-// 토큰 갱신 라우터
-router.post('/refresh-token', verifyToken, refreshUserToken);
+// 토큰 갱신 라우터 -> 리프레시 토큰이 만료면 재로그인(클라이언트에서 리다이렉트 /oauth2/login/provider)
+router.post('/refresh-token', verifyRefreshToken, refreshUserToken);
 
 // 이용약관 동의 라우터
 router.post('/consent', verifyToken, updateAgreement);

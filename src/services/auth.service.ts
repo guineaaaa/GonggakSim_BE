@@ -1,6 +1,6 @@
 import { prisma } from '../db.config.js';
 import { Request, Response } from 'express';
-import {refreshGoogleToken, refreshKakaoToken, refreshNaverToken } from '../utils/auth.utils.js';
+import { refreshGoogleToken, refreshKakaoToken, refreshNaverToken } from '../utils/auth.utils.js';
 
 // 토큰 갱신
 export const refreshAccessToken = async (accessEmail: string) => {
@@ -29,13 +29,14 @@ export const refreshAccessToken = async (accessEmail: string) => {
     return newOAuthAccessToken;
 }
 
-
+// 세션 삭제
 export const clearSession = async (req: Request, res: Response, successMessage: string, snsLogoutUrl?: string) => {
     return new Promise<void>((resolve, reject) => {
       req.logout((err) => {
         if (err) return reject(new Error("세션 로그아웃 실패"));
         req.session.destroy((destroyErr) => {
-          if (destroyErr) return reject(new Error("세션 삭제 실패"));
+          if (destroyErr) 
+            return reject(new Error("세션 삭제 실패"));
           res.clearCookie("connect.sid");
           res.json({ message: successMessage, snsLogoutUrl });
           resolve();

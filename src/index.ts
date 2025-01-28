@@ -99,7 +99,7 @@ app.use(
     saveUninitialized: false,
     secret: process.env.EXPRESS_SESSION_SECRET,
     store: new PrismaSessionStore(prisma, {
-      checkPeriod: 2 * 60 * 1000, // ms : 주기적으로 만료된 세션 삭제
+      checkPeriod: 2 * 60 * 1000, // 2분마다 만료된 세션
       dbRecordIdIsSessionId: true, // 세션 ID를 데이터베이스 레코드 ID로 사용
       dbRecordIdFunction: undefined,
     }),
