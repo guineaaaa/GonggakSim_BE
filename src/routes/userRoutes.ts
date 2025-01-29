@@ -1,4 +1,4 @@
-import { collectUserInfo, getSuggestions } from "../controllers/user.controller.js"
+import { collectUserInfo, getSuggestions, getUserPage, getHelpDoc } from "../controllers/user.controller.js"
 import { verifyToken } from "../middlewares/auth.middleware.js"
 import express from 'express';
 
@@ -8,8 +8,10 @@ router.post('/user-info', verifyToken, collectUserInfo); // 사용자 정보 수
 
 router.get('/suggest-info', verifyToken, getSuggestions); // 유사 사용자 시험 추천 API
 
+router.get('/mypage', verifyToken, getUserPage); // 마이페이지 조회 API
+
 router.patch('/mypage/user-edit', verifyToken, collectUserInfo); // 회원정보 수정 API
 
-router.get('/help', verifyToken); // 도움말 확인
+router.get('/help', verifyToken, getHelpDoc); // 도움말 확인 API
 
 export default router;

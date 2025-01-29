@@ -74,6 +74,7 @@ const googleVerify = async (
     id: user.id,
     email: user.email,
     accessToken,
+    refreshToken,
     oauthProvider: user.oauthProvider,
     isNewUser,
   };
@@ -136,6 +137,7 @@ const kakaoVerify = async (
     id: user.id,
     email,
     accessToken,
+    refreshToken,
     oauthProvider: user.oauthProvider,
     isNewUser
   };
@@ -197,6 +199,7 @@ const naverVerify = async (
     id: user.id,
     email,
     accessToken,
+    refreshToken,
     oauthProvider: user.oauthProvider,
     isNewUser
   };
