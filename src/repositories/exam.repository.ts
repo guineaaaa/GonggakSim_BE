@@ -7,12 +7,10 @@ export const addExam = async (data: Exam): Promise<number> => {
 
   const createdExam = await prisma.exam.create({
     data: {
-      title: data.title,
-      examDate: data.examDate,
-      examRange: data.examRange,
-      memo: data.memo,
-      status: data.status,
       userId: data.userId,
+      title: data.title,
+      examStart: data.examStart ? new Date(data.examStart) : null,
+      examEnd: data.examEnd ? new Date(data.examEnd) : null,
       remindState: data.remindState,
     },
   });

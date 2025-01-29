@@ -704,10 +704,10 @@ paths:
                   message:
                     type: string
                     example: 조회 실패했습니다.
-  '/api/v1/certifications/{certificationId}/schedules':
+  '/api/v1/certifications/{certificationId}/schedules/{month}':
     get:
-      summary: 접수기간 조회 API
-      description: 시험별 접수 기간 조회
+      summary: 월별 시험 일정 조회 API
+      description: 특정 자격증 ID와 월을 기준으로 해당 월에 포함된 시험 일정을 조회합니다.
       tags:
         - Certification
       parameters:
@@ -721,6 +721,15 @@ paths:
           required: true
           schema:
             type: string
+            example: 33
+          description: 조회할 자격증의 고유 ID
+        - in: path
+          name: month
+          required: true
+          schema:
+            type: string
+            example: 2
+          description: 조회할 월 (1부터 12까지)
       security:
         - BearerAuth: []
       responses:
@@ -731,25 +740,50 @@ paths:
               schema:
                 type: object
                 properties:
-                  success:
-                    type: boolean
-                    example: true
-                  message:
-                    type: string
-                    example: 조회 성공입니다.
+                  dates:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        date:
+                          type: string
+                          format: date
+                          example: '2025-02-01'
+                          description: 해당 날짜
+                        scheduleId:
+                          type: integer
+                          example: 5
+                          description: 해당 날짜에 연결된 스케줄 ID
         '400':
-          description: 조회 실패
+          description: 잘못된 요청
           content:
             application/json:
               schema:
                 type: object
                 properties:
-                  success:
-                    type: boolean
-                    example: false
                   message:
                     type: string
-                    example: 조회 실패했습니다.
+                    example: 유효한 자격증 ID와 월 정보를 제공해주세요.
+        '404':
+          description: 해당 월의 시험 일정 없음
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: 해당 월의 시험 일정이 없습니다.
+        '500':
+          description: 서버 오류
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: 서버 오류가 발생했습니다.
   '/api/v1/certifications/{certificationId}/notifications':
     post:
       summary: 접수 알림 신청 API

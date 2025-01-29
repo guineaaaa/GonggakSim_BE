@@ -118,7 +118,7 @@ export const scheduleRandomNotifications = (
   count: number
 ): void => {
   const now = new Date();
-  const examDate = exam.examDate;
+  const examDate = exam.examStart;
 
   if (now >= examDate) {
     console.warn(
