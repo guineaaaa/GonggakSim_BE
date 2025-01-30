@@ -704,10 +704,10 @@ paths:
                   message:
                     type: string
                     example: 조회 실패했습니다.
-  '/api/v1/certifications/{certificationId}/schedules':
+  '/api/v1/certifications/{certificationId}/schedules/{month}':
     get:
-      summary: 접수기간 조회 API
-      description: 시험별 접수 기간 조회
+      summary: 월별 시험 일정 조회 API
+      description: 특정 자격증 ID와 월을 기준으로 해당 월에 포함된 시험 일정을 조회합니다.
       tags:
         - Certification
       parameters:
@@ -721,6 +721,15 @@ paths:
           required: true
           schema:
             type: string
+            example: 33
+          description: 조회할 자격증의 고유 ID
+        - in: path
+          name: month
+          required: true
+          schema:
+            type: string
+            example: 2
+          description: 조회할 월 (1부터 12까지)
       security:
         - BearerAuth: []
       responses:
@@ -731,25 +740,50 @@ paths:
               schema:
                 type: object
                 properties:
-                  success:
-                    type: boolean
-                    example: true
-                  message:
-                    type: string
-                    example: 조회 성공입니다.
+                  dates:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        date:
+                          type: string
+                          format: date
+                          example: '2025-02-01'
+                          description: 해당 날짜
+                        scheduleId:
+                          type: integer
+                          example: 5
+                          description: 해당 날짜에 연결된 스케줄 ID
         '400':
-          description: 조회 실패
+          description: 잘못된 요청
           content:
             application/json:
               schema:
                 type: object
                 properties:
-                  success:
-                    type: boolean
-                    example: false
                   message:
                     type: string
-                    example: 조회 실패했습니다.
+                    example: 유효한 자격증 ID와 월 정보를 제공해주세요.
+        '404':
+          description: 해당 월의 시험 일정 없음
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: 해당 월의 시험 일정이 없습니다.
+        '500':
+          description: 서버 오류
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: 서버 오류가 발생했습니다.
   '/api/v1/certifications/{certificationId}/notifications':
     post:
       summary: 접수 알림 신청 API
@@ -1204,23 +1238,16 @@ paths:
                   type: string
                   description: 시험의 이름
                   example: 테스트 시험
-                examDate:
+                examStart:
                   type: string
                   format: date-time
-                  description: ISO 8601 형식의 시험 날짜 및 시간
-                  example: '2025-01-31T10:00:00Z'
-                examRange:
+                  description: ISO 8601 형식의 시험 시작
+                  example: '2025-01-22T00:00:00Z'
+                examEnd:
                   type: string
-                  description: 시험의 범위
-                  example: 테스트 범위
-                memo:
-                  type: string
-                  description: 시험에 대한 추가적인 메모
-                  example: 테스트 1회독
-                status:
-                  type: string
-                  description: 시험 준비 상태 (진척도)
-                  example: 20%
+                  formate: date-time
+                  description: ISO 8601 형식의 시험 종료 시간
+                  example: '2025-01-22T01:00:00Z'
                 userId:
                   type: integer
                   description: 시험을 추가하는 사용자의 ID
@@ -1241,13 +1268,48 @@ paths:
               schema:
                 type: object
                 properties:
-                  resultType:
-                    type: string
-                    description: 처리 결과 유형
-                    example: SUCCESS
                   success:
+                    type: boolean
+                    example: true
+                  data:
                     type: object
-                    description: 추가된 시험 정보
+                    properties:
+                      id:
+                        type: integer
+                        description: 생성된 시험 ID
+                        example: 2
+                      userId:
+                        type: integer
+                        description: 시험을 추가한 사용자 ID
+                        example: 1
+                      title:
+                        type: string
+                        description: 시험 이름
+                        example: 테스트시험
+                      examStart:
+                        type: string
+                        format: date-time
+                        description: 시험 시작 시간
+                        example: '2025-01-22T00:00:00.000Z'
+                      examEnd:
+                        type: string
+                        format: date-time
+                        description: 시험 종료 시간
+                        example: '2025-01-22T01:00:00.000Z'
+                      remindState:
+                        type: boolean
+                        description: 리마인드 알림 설정 여부
+                        example: true
+                      createdAt:
+                        type: string
+                        format: date-time
+                        description: 생성 시간
+                        example: '2025-01-30T01:44:21.048Z'
+                      updatedAt:
+                        type: string
+                        format: date-time
+                        description: 마지막 업데이트 시간
+                        example: '2025-01-30T01:44:21.048Z'
         '400':
           description: 시험 추가 실패
           content:
@@ -1307,25 +1369,20 @@ paths:
                     items:
                       type: object
                       properties:
-                        id:
-                          type: integer
-                          example: 1
                         title:
                           type: string
                           example: SQLD
-                        examDate:
+                        examStart:
                           type: string
                           format: date-time
                           example: '2025-01-15T10:00:00Z'
-                        examRange:
+                        examEnd:
                           type: string
-                          example: MySQL
-                        memo:
-                          type: string
-                          example: mysql 공부하기
-                        status:
-                          type: string
-                          example: 40%
+                          format: date-time
+                          example: '2025-01-22T01:00:00.000Z'
+                        remindState:
+                          type: boolean
+                          example: true
         '400':
           description: 잘못된 요청
           content:
