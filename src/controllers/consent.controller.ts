@@ -14,7 +14,7 @@ export const updateAgreement = async (req: Request, res: Response) => {
     const { agreements } = req.body;
 
     if (!accessEmail) {
-        res.status(StatusCodes.UNAUTHORIZED).json({ 
+        return res.status(StatusCodes.UNAUTHORIZED).json({ 
             success: false, 
             message: "인증이 필요합니다." 
       });
@@ -60,8 +60,8 @@ export const updateAgreement = async (req: Request, res: Response) => {
         }
       }
     });
-    } catch (error) {
-        console.error('약관동의 상태 저장 실패:', error);
+    } catch (err) {
+        console.error('약관동의 상태 저장 실패:', err);
         return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ 
             success: false,
             message: '약관동의 상태를 저장하는데 실패했습니다.' 

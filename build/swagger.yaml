@@ -7,6 +7,12 @@ info:
     name: MIT
 servers:
   - url: 'http://localhost:3000/'
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
 paths:
   /oauth2/refresh-token:
     post:
@@ -14,6 +20,12 @@ paths:
       description: 만료된 액세스 토큰을 갱신합니다.
       tags:
         - OAuth
+      parameters:
+        - in: body
+          name: refreshToken
+          required: true
+          schema:
+            type: string
       security:
         - BearerAuth: []
       responses:
@@ -59,15 +71,9 @@ paths:
   /oauth2/login:
     get:
       summary: 로그인 API
-      description: 사용자 로그인을 처리합니다. //swagger에서는 불가능함
+      description: 사용자 로그인을 처리합니다.(swagger에서는 불가능)
       tags:
         - OAuth
-      parameters:
-        - in: query
-          name: provider
-          required: true
-          schema:
-            type: string
       security:
         - BearerAuth: []
       responses:
@@ -96,7 +102,7 @@ paths:
                     example: 로그인 실패
   /oauth2/logout:
     post:
-      summary: SNS 로그아웃 API
+      summary: 로그아웃 API
       description: 사용자 로그아웃을 처리합니다.
       tags:
         - OAuth
@@ -1480,9 +1486,3 @@ paths:
                     type: string
                     description: 에러 메시지
                     example: Unauthorized
-components:
-  securitySchemes:
-    BearerAuth:
-      type: http
-      scheme: bearer
-      bearerFormat: JWT

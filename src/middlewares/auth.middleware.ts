@@ -84,14 +84,19 @@ const fetchUserInfo = async (provider: string, token: string): Promise<UserInfo>
 export const verifyToken = async (req: Request, res: Response, next: NextFunction) => {
   try {
     // 클라이언트에 저장된 토큰 읽기
-    const accessToken  = req.headers.authorization;
+    let accessToken  = req.headers.authorization;
 
     if (!accessToken) {
       return res.status(StatusCodes.UNAUTHORIZED).json({
         success: false,
         message: "인증 토큰이 필요합니다.",
-      })as any;
+      }) as any;
     }
+
+    // "Bearer " 접두사 제거
+    if (accessToken.startsWith("Bearer ")) {
+      accessToken = accessToken.slice(7);
+    };
 
     // 사용자 정보 가져오기 (예: Kakao, Google 등)
     const oauthProvider = req.query.provider as string; // 클라이언트에서 전달받은 OAuth 제공자
@@ -111,7 +116,7 @@ export const verifyToken = async (req: Request, res: Response, next: NextFunctio
 
     next(); // 다음 미들웨어로 전달
   } catch (err) {
-    console.error("Token verification failed:", err);
+    console.error("토큰 검증 실패:", err);
     return res.status(StatusCodes.UNAUTHORIZED).json({
       success: false,
       message: "유효하지 않은 토큰입니다.",
@@ -121,7 +126,7 @@ export const verifyToken = async (req: Request, res: Response, next: NextFunctio
 
 export const verifyRefreshToken = async (req: Request, res: Response, next: NextFunction) => {
   try{
-    const refreshToken = req.headers.authorization;
+    const refreshToken = req.body;
 
     if (!refreshToken) {
       return res.status(400).json({ 
