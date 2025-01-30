@@ -1371,11 +1371,11 @@ paths:
                       properties:
                         title:
                           type: string
-                          example: SQLD
+                          example: 테스트 시험
                         examStart:
                           type: string
                           format: date-time
-                          example: '2025-01-15T10:00:00Z'
+                          example: '2025-01-22T00:00:00.000Z'
                         examEnd:
                           type: string
                           format: date-time
@@ -1383,6 +1383,24 @@ paths:
                         remindState:
                           type: boolean
                           example: true
+              examples:
+                multipleExams:
+                  summary: 여러 개의 시험이 반환되는 경우
+                  value:
+                    success: true
+                    data:
+                      - title: 테스트시험
+                        examStart: '2025-01-22T00:00:00.000Z'
+                        examEnd: '2025-01-22T01:00:00.000Z'
+                        remindState: true
+                      - title: 테스트시험
+                        examStart: '2025-01-22T00:00:00.000Z'
+                        examEnd: '2025-01-22T01:00:00.000Z'
+                        remindState: true
+                      - title: 테스트 시험
+                        examStart: '2025-01-22T00:00:00.000Z'
+                        examEnd: '2025-01-22T01:00:00.000Z'
+                        remindState: true
         '400':
           description: 잘못된 요청
           content:
