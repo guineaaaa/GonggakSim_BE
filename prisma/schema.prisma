@@ -39,7 +39,7 @@ model Exam {
   user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId       Int
   title        String
-  examStart    DateTime?
+  examStart    DateTime
   examEnd      DateTime?
   
   

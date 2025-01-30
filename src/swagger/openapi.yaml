@@ -306,8 +306,8 @@ paths:
                     example: false
                   message:
                     type: string
-                    example: "사용자 정보 저장 중 오류가 발생했습니다."              
-  
+                    example: "사용자 정보 저장 중 오류가 발생했습니다."
+
   /api/v1/users/suggest-info:
     get:
       summary: 유사 사용자 시험 추천 API
@@ -467,7 +467,7 @@ paths:
                     example: false
                   message:
                     type: string
-                    example: "도움말 조회 실패"                  
+                    example: "도움말 조회 실패"
   /api/v1/users/mypage/user-edit:
     patch:
       summary: 사용자 정보 수정 API
@@ -1215,23 +1215,16 @@ paths:
                   type: string
                   description: 시험의 이름
                   example: 테스트 시험
-                examDate:
+                examStart:
                   type: string
                   format: date-time
-                  description: ISO 8601 형식의 시험 날짜 및 시간
-                  example: 2025-01-31T10:00:00Z
-                examRange:
+                  description: ISO 8601 형식의 시험 시작
+                  example: "ISO 8601 형식의 시험 시작일"
+                examEnd:
                   type: string
-                  description: 시험의 범위
-                  example: 테스트 범위
-                memo:
-                  type: string
-                  description: 시험에 대한 추가적인 메모
-                  example: 테스트 1회독
-                status:
-                  type: string
-                  description: 시험 준비 상태 (진척도)
-                  example: 20%
+                  formate: date-time
+                  description: ISO 8601 형식의 시험 종료 시간
+                  example: "ISO 8601 형식의 시험 종료일"
                 userId:
                   type: integer
                   description: 시험을 추가하는 사용자의 ID
