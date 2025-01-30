@@ -14,6 +14,7 @@ import authRoutes from "./routes/authRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
 import scheduleRoutes from "./routes/scheduleRoutes.js";
 
+import { verifyToken } from "./middlewares/auth.middleware.js";
 import { prisma } from "./db.config.js";
 
 //swagger
@@ -120,30 +121,28 @@ app.use("/oauth2", authRoutes); // 로그아웃, 토큰 갱신, 토큰 검증, �
 app.use("/api/v1/users", userRoutes); // 사용자 정보 수집 API, 유사 사용자 추천 API, 회원정보 수정 API, 도움말 확인
 
 // 캘린더 API
-app.post("/api/v1/calander/exams", handleAddExam);
-app.get("/api/v1/calander/exams", handleGetExam);
-app.delete("/api/v1/calander/exams/:examId", handleDeleteExam); //삭제하려는 시험 id
+app.post("/api/v1/calander/exams", verifyToken, handleAddExam);
+app.get("/api/v1/calander/exams", verifyToken, handleGetExam);
+app.delete("/api/v1/calander/exams/:examId", verifyToken, handleDeleteExam); //삭제하려는 시험 id
 
 // 알림 방해금지 시간대 설정 API
-app.post("/api/v1/notification/settings", handleDnDNotification);
+app.post("/api/v1/notification/settings", verifyToken, handleDnDNotification);
 
 // AI 시험 추천 API
-app.post("/api/v1/schedule/recommendation", handleRecommendSchedule);
+app.post("/api/v1/schedule/recommendation", verifyToken, handleRecommendSchedule);
 
 // 자격증 검색 API
-app.get("/api/v1/certifications/search", handleGetCertifications);
+app.get("/api/v1/certifications/search", verifyToken, handleGetCertifications);
 
 //자격증 목록 조회 API
-app.get("/api/v1/certifications", handleGetAllCertifications);
+app.get("/api/v1/certifications", verifyToken, handleGetAllCertifications);
 app.get(
   "/api/v1/certifications/category/:category",
+  verifyToken,
   handleGetCertificationsByCategory
 );
-app.get("/api/v1/certifications/:id", handleGetCertificationById);
+app.get("/api/v1/certifications/:id", verifyToken, handleGetCertificationById);
 
-app.get("/", (req, res) => {
-  res.send("Hello World!");
-});
 
 // 전역 오류 처리 미들웨어
 app.use((err: any, req: Request, res: Response, next: NextFunction) => {

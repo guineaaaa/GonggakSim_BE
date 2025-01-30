@@ -39,10 +39,11 @@ model Exam {
   user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId       Int
   title        String
-  examDate     DateTime
-  examRange    String
-  memo         String?
-  status       String
+  examStart    DateTime
+  examEnd      DateTime?
+  
+  
+  
   remindState  Boolean   @default(false)
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt

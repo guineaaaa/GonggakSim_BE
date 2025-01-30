@@ -1,23 +1,19 @@
 export interface Exam {
   id?: number;
   title: string;
-  examDate: Date;
-  examRange: string;
-  memo: string;
-  status: string;
-  userId: number;
+  examStart: string | Date;
+  examEnd: string | Date | null;
   remindState: boolean;
   fcmToken?: string | null;
+  userId: number;
 }
 
 export const bodyToExam = (body: any): Exam => {
   return {
-    title: body.title,
-    examDate: new Date(body.examDate),
-    examRange: body.examRange,
-    memo: body.memo,
-    status: body.status,
     userId: Number(body.userId),
+    title: body.title,
+    examStart: new Date(body.examStart),
+    examEnd: body.examEnd ? new Date(body.examEnd) : null, // null 처리
     remindState: Boolean(body.remindState),
     fcmToken: body.fcmToken,
   };
@@ -26,11 +22,15 @@ export const bodyToExam = (body: any): Exam => {
 export const responseFromExam = (exam: Exam) => {
   return {
     title: exam.title,
-    examDate: exam.examDate.toISOString(),
-    examRange: exam.examRange,
-    memo: exam.memo,
-    status: exam.status,
-    userId: exam.userId,
+    examStart:
+      exam.examStart instanceof Date
+        ? exam.examStart.toISOString()
+        : new Date(exam.examStart).toISOString(),
+    examEnd: exam.examEnd
+      ? exam.examEnd instanceof Date
+        ? exam.examEnd.toISOString()
+        : new Date(exam.examEnd).toISOString()
+      : null,
     remindState: exam.remindState,
     fcmToken: exam.fcmToken,
   };

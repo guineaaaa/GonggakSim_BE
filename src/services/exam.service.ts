@@ -15,7 +15,6 @@ export const addExamService = async (data: Exam) => {
     if (!data.fcmToken) {
       data.fcmToken = await getUserFcmToken(data.userId);
     }
-    // fcmToken이 null이면 undefined로 변환
     if (data.fcmToken == null) {
       data.fcmToken = undefined;
     }
@@ -37,7 +36,6 @@ export const addExamService = async (data: Exam) => {
     // 알림 처리
     if (exam && exam.remindState) {
       await sendImmediateNotification(exam);
-      // scheduleRandomNotifications(exam, 3); // 실제 스케쥴링 시 활성화
     } else {
       console.error("알림을 스케쥴링할 수 없습니다.");
     }
@@ -57,6 +55,5 @@ export const getExamsService = async (userId: number) => {
 
 // 캘린더 사용자 시험 삭제
 export const deleteExamService = async (examId: number, userId: number) => {
-  const isDeleted = await deleteExam(examId, userId);
-  return isDeleted;
+  return await deleteExam(examId, userId);
 };
