@@ -9,8 +9,8 @@ export const addExam = async (data: Exam): Promise<number> => {
     data: {
       userId: data.userId,
       title: data.title,
-      examStart: data.examStart ? new Date(data.examStart) : null,
-      examEnd: data.examEnd ? new Date(data.examEnd) : null,
+      examStart: new Date(data.examStart),
+      examEnd: data.examEnd ? new Date(data.examEnd) : undefined,
       remindState: data.remindState,
     },
   });

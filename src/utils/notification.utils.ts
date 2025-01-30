@@ -1,7 +1,7 @@
 import cron from "node-cron";
 import { getUserFcmToken, sendFcmNotification } from "./fcm.utils.js";
 import { Exam } from "../dtos/exam.dto.js";
-import { DnDTime, Day, QuizType } from "../dtos/notificationSettings.dto.js";
+import { Day, QuizType } from "../dtos/notificationSettings.dto.js";
 import { getNotificationSettingsByUserId } from "../repositories/notification.repository.js";
 
 // 요일 Enum을 Cron 형식의 숫자로 변환
@@ -118,7 +118,7 @@ export const scheduleRandomNotifications = (
   count: number
 ): void => {
   const now = new Date();
-  const examDate = exam.examStart;
+  const examDate = new Date(exam.examStart);
 
   if (now >= examDate) {
     console.warn(
