@@ -8,7 +8,7 @@ export const refreshUserToken = async (req: Request, res: Response) => {
     try {
         // 1. 사용자 인증
         const { user } = req as AuthRequest; // AuthRequest로 타입 캐스팅
-        const accessEmail = user?.email; //verifyToken으로부터 사용자 email 가져오기
+        const accessEmail = user.email; //verifyToken으로부터 사용자 email 가져오기
 
         if (!accessEmail) {
             res.status(StatusCodes.UNAUTHORIZED).json({ 
@@ -48,7 +48,7 @@ export const refreshUserToken = async (req: Request, res: Response) => {
 export const logoutUser = async (req: Request, res: Response) => {
     try {
         const { user } = req as AuthRequest;
-        const provider = req.query.provider as string;
+        const provider = user.provider;
     
         if (!user) throw new Error("사용자가 인증되지 않았습니다.");
         const logoutUrl = await logoutFromSNS(provider);
@@ -69,7 +69,7 @@ export const deleteUserAccount = async (req: Request, res: Response) => {
         const { user } = req as AuthRequest;
         const accessEmail = user?.email;
         const token = user.accessToken;
-        const provider = req.query.provider as string;
+        const provider = user.provider;
 
         await deleteAccount(accessEmail, token, provider);
         await clearSession(req, res, "회원탈퇴 완료");
