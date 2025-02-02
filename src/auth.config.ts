@@ -1,5 +1,5 @@
 import dotenv from "dotenv";
-import { Strategy as GoogleStrategy } from "passport-google-oauth20";
+import { OAuth2Client } from 'google-auth-library';
 import { Strategy as KakaoStrategy } from "passport-kakao";
 import { Strategy as NaverStrategy } from "passport-naver";
 import { prisma } from "./db.config.js";
@@ -7,7 +7,7 @@ import { prisma } from "./db.config.js";
 dotenv.config();
 
 // 1. 환경변수 검증
-if (!process.env.PASSPORT_GOOGLE_CLIENT_ID || !process.env.PASSPORT_GOOGLE_CLIENT_SECRET){
+if (!process.env.PASSPORT_GOOGLE_CLIENT_ID){
   throw new Error("Google OAuth environment variables are missing");
 }
 if (!process.env.PASSPORT_KAKAO_CLIENT_ID || !process.env.PASSPORT_KAKAO_CLIENT_SECRET) {
@@ -18,67 +18,60 @@ if (!process.env.PASSPORT_NAVER_CLIENT_ID || !process.env.PASSPORT_NAVER_CLIENT_
 }
 
 // 2. 구글 
-export const googleStrategy = new GoogleStrategy(
-  {
-    clientID: process.env.PASSPORT_GOOGLE_CLIENT_ID,
-    clientSecret: process.env.PASSPORT_GOOGLE_CLIENT_SECRET,
-    callbackURL: "/oauth2/login/google/callback",
-    scope: ["email", "profile"],
-    state: true,
-  }, // 타입 단언 사용
-  async (accessToken, refreshToken, profile, cb) => {
-    try {
-      const user = await googleVerify(accessToken, refreshToken, profile);
-      cb(null, user);
-    } catch (err) {
-      cb(err);
-    }
-  }
-);
+const client = new OAuth2Client(process.env.PASSPORT_GOOGLE_CLIENT_ID);
 
-const googleVerify = async (
-  accessToken: string,
-  refreshToken: string,
-  profile: { emails?: { value: string }[]; displayName: string; photos?: { value: string }[] }
-) => {
-  // 이메일 주소 추출
-  const email = profile.emails?.[0]?.value;
-  const profileImage  = profile.photos?.[0]?.value || null;
-  let user = await prisma.user.findFirst({ where: { email, oauthProvider: "google" } });
+export const verifyGoogleToken = async (idToken: string) => {
+  const ticket = await client.verifyIdToken({
+    idToken,
+    audience: process.env.PASSPORT_GOOGLE_CLIENT_ID,
+  });
 
-  
-
-  // 신규 사용자 여부 확인
-  const isNewUser = !user;
-
-  if (!user) {
-    user = await prisma.user.create({
-      data: {
-        email: email || "ggs_email",
-        name: profile.displayName || "ggs_user",
-        profileImage: profileImage,
-        oauthProvider: "google",
-        oauthRefreshToken: refreshToken,
-      },
-    });
-  } else {
-    await prisma.user.update({
-      where: { email, oauthProvider: "google" },
-      data: {
-        oauthRefreshToken: refreshToken,
-      },
-    });
-  }
-
-  return {
-    id: user.id,
-    email: user.email,
-    accessToken,
-    refreshToken,
-    oauthProvider: user.oauthProvider,
-    isNewUser,
-  };
+  console.log(ticket); // 검증
+  return ticket.getPayload(); // 검증된 사용자 정보 반환
 };
+
+const googleVerify = async (idToken: string) => {
+  try {
+    const payload = await verifyGoogleToken(idToken);
+    
+    if (!payload?.email) {
+      throw new Error("Google 인증 실패: 이메일을 가져올 수 없음");
+    }
+
+    const email = payload.email;
+    const name = payload.name || "Google User";
+    const profileImage = payload.picture || null;
+
+    let user = await prisma.user.findFirst({ where: { email, oauthProvider: "google" } });
+
+    // 신규 사용자 여부 확인
+    const isNewUser = !user;
+
+    if (!user) {
+      user = await prisma.user.create({
+        data: {
+          email,
+          name,
+          profileImage,
+          oauthProvider: "google",
+        },
+      });
+    }
+
+    return {
+      id: user.id,
+      email: user.email,
+      isNewUser,
+      oauthProvider: user.oauthProvider,
+    };
+  } catch (error) {
+    console.error("Google 로그인 오류:", error);
+    throw new Error("Google 인증 중 오류 발생");
+  }
+};
+
+export default googleVerify;
+
 
 // 3. 카카오
 export const kakaoStrategy = new KakaoStrategy(

@@ -15,17 +15,17 @@ interface NaverUserResponse {
 }
 
 // OAuth 제공자별 토큰 갱신 유틸리티 함수들
-export const refreshGoogleToken = async (refreshToken: string) => {
-  const oauth2Client = new OAuth2Client(
-    process.env.PASSPORT_GOOGLE_CLIENT_ID,
-    process.env.PASSPORT_GOOGLE_CLIENT_SECRET
-  );
-  oauth2Client.setCredentials({
-    refresh_token: refreshToken
-  });
-  const { credentials } = await oauth2Client.refreshAccessToken();
-  return credentials.access_token;
-}
+// export const refreshGoogleToken = async (refreshToken: string) => {
+//   const oauth2Client = new OAuth2Client(
+//     process.env.PASSPORT_GOOGLE_CLIENT_ID,
+//     process.env.PASSPORT_GOOGLE_CLIENT_SECRET
+//   );
+//   oauth2Client.setCredentials({
+//     refresh_token: refreshToken
+//   });
+//   const { credentials } = await oauth2Client.refreshAccessToken();
+//   return credentials.access_token;
+// }
 
 export const refreshKakaoToken = async (refreshToken: string) => {
   const params = new URLSearchParams();

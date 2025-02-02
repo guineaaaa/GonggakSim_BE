@@ -1,6 +1,6 @@
 import { prisma } from '../db.config.js';
 import { Request, Response } from 'express';
-import { refreshGoogleToken, refreshKakaoToken, refreshNaverToken } from '../utils/auth.utils.js';
+import { refreshKakaoToken, refreshNaverToken } from '../utils/auth.utils.js';
 
 // 토큰 갱신
 export const refreshAccessToken = async (accessEmail: string) => {
@@ -14,9 +14,6 @@ export const refreshAccessToken = async (accessEmail: string) => {
 
     let newOAuthAccessToken;
     switch (user.oauthProvider) {
-        case 'google':
-            newOAuthAccessToken = await refreshGoogleToken(user.oauthRefreshToken);
-            break;
         case 'kakao':
             newOAuthAccessToken = await refreshKakaoToken(user.oauthRefreshToken);
             break;
@@ -54,7 +51,7 @@ export const logoutFromSNS = async (provider: string): Promise<string> => {
     if (provider === "kakao") {
       logoutUrl = `https://kauth.kakao.com/oauth/logout?client_id=${process.env.PASSPORT_KAKAO_CLIENT_ID}&logout_redirect_uri=/oauth2/login`;
     } else if (provider === "google") {
-      logoutUrl = `https://accounts.google.com/Logout?continue=${encodeURIComponent("/oauth2/login")}`;
+      logoutUrl = `http://${process.env.EC2_IP}:${process.env.PORT}/oauth2/login")}`;
     } else if (provider === "naver") {
       logoutUrl = "https://nid.naver.com/nidlogin.logout"; // 클라이언트측에서 리디렉션 처리
     }
@@ -76,7 +73,7 @@ export const deleteAccount = async (accessEmail: string, accessToken: string, pr
         headers: { Authorization: `Bearer ${accessToken}` },
       });
     } else if (provider === "google") {
-      await fetch(`https://accounts.google.com/o/oauth2/revoke?token=${accessToken}`, { 
+      await fetch(`http://${process.env.EC2_IP}:${process.env.PORT}/oauth2/login`, { 
         method: "POST" });
     } else if (provider === "naver") {
       await fetch("https://nid.naver.com/oauth2/token", {
