@@ -1,49 +1,61 @@
 import express from "express";
-import passport from "passport";
-import { googleStrategy } from "../auth.config.js";
+import { verifyGoogleToken } from "../auth.config.js";
+import { prisma } from "../db.config.js";
 
 const router = express.Router();
 
-passport.use(googleStrategy);
-passport.serializeUser((user, done) => done(null, user));
-passport.deserializeUser<{ email: string; name: string }>(
-  (user, done) => done(null, user)
-);
-
-
 // 구글 인증 라우트
-router.get(
-  "/login/google",
-  passport.authenticate("google", {
-  accessType: 'offline',  // refreshToken을 받기 위해 필요
-  prompt: 'consent',      // 매번 사용자 동의 화면을 보여줌 //select_account, login
-})
-);
+router.post("/login/google", async (req, res): Promise<any> => {
+  try {
+    const { idToken } = req.body;
 
-// 구글 인증 콜백 라우트
-router.get(
-    "/login/google/callback",
-    passport.authenticate("google", {
-      failureRedirect: "/oauth2/login/google",
-      failureMessage: true,
-    }),
-    (req, res) => {
-      // 사용자 데이터 가져오기
-      const user = req.user as { email: string; accessToken: string; refreshToken: string; isNewUser: boolean };
-      const { accessToken, refreshToken, isNewUser } = user;
+    console.log(idToken); //검증
 
-      // 데이터 확인
-      console.log(user);
-  
-      // 클라이언트(Android)에 JSON으로 응답 -> android쪽에서 isNewUser로 /consent or /home 으로 리다이렉트
-      res.status(200).json({
-        success: true,
-        message: "로그인 성공",
-        accessToken,
-        refreshToken,
+    if (!idToken) {
+      return res.status(400).json({ success: false, message: "idToken이 필요합니다." });
+    }
+
+    // idToken 검증 -> Google 사용자 정보 가져오기
+    const payload = await verifyGoogleToken(idToken);
+    if (!payload?.email) {
+      return res.status(400).json({ success: false, message: "Google 인증 실패" });
+    }
+
+    const email = payload.email;
+    const name = payload.name || "Google User";
+    const profileImage = payload.picture || null;
+
+    // 기존 사용자 조회
+    let user = await prisma.user.findFirst({ where: { email, oauthProvider: "google" } });
+    const isNewUser = !user;
+
+    // 신규 사용자라면 저장
+    if (!user) {
+      user = await prisma.user.create({
+        data: {
+          email,
+          name,
+          profileImage,
+          oauthProvider: "google",
+        },
+      });
+    }
+
+    // JSON 응답 반환
+    return res.status(200).json({
+      success: true,
+      message: "로그인 성공",
+      user: {
+        id: user.id,
+        email: user.email,
         isNewUser,
+        oauthProvider: user.oauthProvider,
+      },
     });
+  } catch (error) {
+    console.error("Google 로그인 오류:", error);
+    return res.status(500).json({ success: false, message: "서버 오류 발생" });
   }
-);
+});
 
 export default router;
