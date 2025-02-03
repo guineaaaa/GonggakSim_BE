@@ -342,17 +342,25 @@ paths:
                     example: true
                   message:
                     type: string
-                    example: 시험 추천 성공입니다.
-                  updatedConsent:
-                    type: object
-                    properties:
-                      Certification:
-                        type: array
-                        items:
+                    example: 시험 추천 완료
+                  suggestions:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                        name:
                           type: string
-                    example:
-                      Certification:
-                        - 'TOEIC, 컴퓨터활용 1급'
+                        category:
+                          type: string
+                      example:
+                        - id: 1
+                          name: 컴퓨터활용1급
+                          category: 전산/IT
+                        - id: 2
+                          name: 정보처리기사
+                          category: 전산/IT
         '400':
           description: 유사 사용자 시험 추천 실패
           content:

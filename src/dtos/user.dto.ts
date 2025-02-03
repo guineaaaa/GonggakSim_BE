@@ -22,4 +22,17 @@ export interface SuggestInfoDto {
     id: number;
     name: string;
     category: string;
+}
+
+export interface UserSimilarityInfo {
+    user: UserWithDetails;
+    similarity: number;
+  }
+  
+export interface UserWithDetails {
+    id: number;
+    age: number | null;
+    employmentStatus: string | null;
+    users: { category: { id: number; name: string } }[];
+    exams: { id: number; title: string }[];
   }
