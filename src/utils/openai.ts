@@ -88,7 +88,7 @@ class OpenAIProvider {
 
       // 유효한 시험 일정 필터링 (조정된 최소/최대 기간 적용)
       const validSchedules = availableSchedules.filter((schedule) => {
-        const examDate = dayjs(schedule.examDate);
+        const examDate = dayjs(schedule.examStart);
         const weeksUntilExam = examDate.diff(today, "week");
         return (
           weeksUntilExam >= adjustedMinimumWeeksToStudy * frequencyMultiplier &&
@@ -115,7 +115,7 @@ class OpenAIProvider {
           ${validSchedules
             .map(
               (schedule) =>
-                `- 날짜: ${dayjs(schedule.examDate).format("YYYY-MM-DD dddd")}`
+                `- 날짜: ${dayjs(schedule.examStart).format("YYYY-MM-DD dddd")}`
             )
             .join("\n")}
 
