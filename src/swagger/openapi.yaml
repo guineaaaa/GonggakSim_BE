@@ -357,7 +357,7 @@ paths:
                         - id: 1
                           name: "컴퓨터활용1급"
                           category: "전산/IT"
-                        - id: 2
+                        - id: 3
                           name: "정보처리기사"
                           category: "전산/IT"
         "400":
