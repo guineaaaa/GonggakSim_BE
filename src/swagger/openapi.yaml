@@ -3,10 +3,9 @@ info:
   version: 1.0.0
   title: Gonggacksim 1.0v API docs
   description: 공각심 API 문서
-  license:
-    name: MIT
 servers:
   - url: "http://localhost:3000/"
+  - url: "http://13.125.231.189:3000/"
 
 components:
   securitySchemes:
@@ -342,18 +341,27 @@ paths:
                     example: true
                   message:
                     type: string
-                    example: "시험 추천 성공입니다."
-                  updatedConsent:
-                    type: object
-                    properties:
-                      Certification:
-                        type: array
-                        items:
+                    example: "시험 추천 완료"
+                  suggestions:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                        name:
                           type: string
-                    example:
-                      Certification: ["TOEIC, 컴퓨터활용 1급"]
+                        category:
+                          type: string
+                      example:
+                        - id: 1
+                          name: "컴퓨터활용1급"
+                          category: "전산/IT"
+                        - id: 3
+                          name: "정보처리기사"
+                          category: "전산/IT"
         "400":
-          description: 유사 사용자 시험 추천 실패
+          description: 시험 추천 실패
           content:
             application/json:
               schema:
@@ -364,7 +372,7 @@ paths:
                     example: false
                   message:
                     type: string
-                    example: "유사 사용자 시험 추천 중 실패했습니다."
+                    example: "시험 추천 실패"
   /api/v1/users/mypage:
     get:
       summary: 마이페이지 조회 API
