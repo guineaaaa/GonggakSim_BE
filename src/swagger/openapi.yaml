@@ -3,10 +3,9 @@ info:
   version: 1.0.0
   title: Gonggacksim 1.0v API docs
   description: 공각심 API 문서
-  license:
-    name: MIT
 servers:
   - url: "http://localhost:3000/"
+  - url: "http://13.125.231.189:3000/"
 
 components:
   securitySchemes:
