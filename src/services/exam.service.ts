@@ -4,6 +4,7 @@ import {
   addExam,
   getExam,
   deleteExam,
+  addExamWithSchedule,
 } from "../repositories/exam.repository.js";
 import { Exam, responseFromExams } from "../dtos/exam.dto.js";
 import { sendImmediateNotification } from "../utils/notification.utils.js";
@@ -56,4 +57,19 @@ export const getExamsService = async (userId: number) => {
 // 캘린더 사용자 시험 삭제
 export const deleteExamService = async (examId: number, userId: number) => {
   return await deleteExam(examId, userId);
+};
+
+export const addExamByCertificationSchedule = async (userId: number, certificationId: number, scheduleId: number) => {
+  try {
+    // exam 테이블에 데이터 추가
+    const addedExamId = await addExamWithSchedule(userId, certificationId, scheduleId);
+
+    // 추가된 시험 정보 조회
+    const exam = await getExam(addedExamId);
+    
+    return exam;
+  } catch (error) {
+    console.error("시험 추가 중 오류 발생:", error);
+    throw error;
+  }
 };
