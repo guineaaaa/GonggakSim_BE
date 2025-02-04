@@ -7,6 +7,7 @@ import {
   deleteExamService,
   addExamByCertificationSchedule,
 } from "../services/exam.service.js";
+import { prisma } from "../db.config.js";
 
 // post
 export const handleAddExam = async (
@@ -90,27 +91,81 @@ export const handleAddExamByCertificationSchedule = async (
   req: Request,
   res: Response,
   next: NextFunction
-) => {
-  console.log("자격증 시험 일정 등록 요청");
-
+): Promise<void> => {
   try {
-    const certificationId = Number(req.params.certification_id);
     const { userId, scheduleId } = req.body;
+    const certificationId = Number(req.params.certification_id);
 
-    if (!certificationId || !userId || !scheduleId) {
-      return res.status(StatusCodes.BAD_REQUEST).json({
+    // 필수 값 확인
+    if (!userId || !scheduleId || !certificationId) {
+      res.status(StatusCodes.BAD_REQUEST).json({
         success: false,
-        message: "유효한 certification_id, userId, scheduleId가 필요합니다.",
+        message: "유효한 userId, scheduleId 및 certification_id가 필요합니다.",
       });
+      return;
     }
 
-    const exam = await addExamByCertificationSchedule(userId, certificationId, scheduleId);
+    // Certification 조회
+    const certification = await prisma.certification.findUnique({
+      where: { id: certificationId },
+      select: { name: true },
+    });
+
+    if (!certification) {
+      res.status(StatusCodes.NOT_FOUND).json({
+        success: false,
+        message: "해당 자격증을 찾을 수 없습니다.",
+      });
+      return;
+    }
+
+    // Schedule 조회
+    const schedule = await prisma.schedule.findUnique({
+      where: { id: scheduleId },
+      select: { examStart: true, examEnd: true },
+    });
+
+    if (!schedule) {
+      res.status(StatusCodes.NOT_FOUND).json({
+        success: false,
+        message: "해당 일정(scheduleId)을 찾을 수 없습니다.",
+      });
+      return;
+    }
+    // 중복 검사 로직
+    const existingExam = await prisma.exam.findFirst({
+      where: {
+        userId,
+        title: certification.name,
+        examStart: schedule.examStart ? new Date(schedule.examStart) : new Date(), // null 방지
+      },
+    });
+
+    if (existingExam) {
+      res.status(StatusCodes.CONFLICT).json({
+        success: false,
+        message: "이미 추가된 일정입니다.",
+      });
+      return;
+    }
+
+    // Exam 생성
+    await prisma.exam.create({
+      data: {
+        userId,
+        title: certification.name,
+        examStart: schedule.examStart ? new Date(schedule.examStart) : new Date(),
+        examEnd: schedule.examEnd ? new Date(schedule.examEnd) : null,
+        remindState: false,
+      },
+    });
 
     res.status(StatusCodes.CREATED).json({
       success: true,
-      data: exam,
+      message: "시험 일정이 성공적으로 추가되었습니다.",
     });
   } catch (error) {
-    next(error);
+    console.error("시험 추가 중 오류 발생:", error);
+    next(error); // 오류 전파
   }
 };

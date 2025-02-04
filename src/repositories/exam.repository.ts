@@ -73,11 +73,11 @@ export const addExamWithSchedule = async (userId: number, certificationId: numbe
     data: {
       userId,
       title: certification.name, // Certification의 name 사용
-      examStart: schedule.examStart,
-      examEnd: schedule.examEnd,
+      examStart: schedule.examStart ? new Date(schedule.examStart) : new Date(), // null 방지
+      examEnd: schedule.examEnd ? new Date(schedule.examEnd) : null, // null 허용
       remindState: false, // 기본값 false
     },
-  });
+  });  
 
   return createdExam.id;
 };
