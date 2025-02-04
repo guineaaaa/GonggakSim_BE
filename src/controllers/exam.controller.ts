@@ -5,6 +5,7 @@ import {
   addExamService,
   getExamsService,
   deleteExamService,
+  addExamByCertificationSchedule,
 } from "../services/exam.service.js";
 
 // post
@@ -79,6 +80,35 @@ export const handleDeleteExam = async (
     res.status(StatusCodes.OK).json({
       success: true,
       message: "Exam deleted successfully",
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const handleAddExamByCertificationSchedule = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  console.log("자격증 시험 일정 등록 요청");
+
+  try {
+    const certificationId = Number(req.params.certification_id);
+    const { userId, scheduleId } = req.body;
+
+    if (!certificationId || !userId || !scheduleId) {
+      return res.status(StatusCodes.BAD_REQUEST).json({
+        success: false,
+        message: "유효한 certification_id, userId, scheduleId가 필요합니다.",
+      });
+    }
+
+    const exam = await addExamByCertificationSchedule(userId, certificationId, scheduleId);
+
+    res.status(StatusCodes.CREATED).json({
+      success: true,
+      data: exam,
     });
   } catch (error) {
     next(error);

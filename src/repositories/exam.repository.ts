@@ -42,3 +42,42 @@ export const deleteExam = async (examId: number, userId: number) => {
   });
   return deletedExam.count > 0; // 삭제된 레코드가 있는지 확인
 };
+
+
+// 새로운 시험 추가 (기존 addExam 재사용)
+export const addExamWithSchedule = async (userId: number, certificationId: number, scheduleId: number): Promise<number> => {
+  console.log("addExamWithSchedule 호출:", { userId, certificationId, scheduleId });
+
+  // Certification에서 name 가져오기
+  const certification = await prisma.certification.findUnique({
+    where: { id: certificationId },
+    select: { name: true },
+  });
+
+  if (!certification) {
+    throw new Error("해당 certification을 찾을 수 없습니다.");
+  }
+
+  // Schedule에서 examStart, examEnd 가져오기
+  const schedule = await prisma.schedule.findUnique({
+    where: { id: scheduleId },
+    select: { examStart: true, examEnd: true },
+  });
+
+  if (!schedule) {
+    throw new Error("해당 schedule을 찾을 수 없습니다.");
+  }
+
+  // Exam 테이블에 추가
+  const createdExam = await prisma.exam.create({
+    data: {
+      userId,
+      title: certification.name, // Certification의 name 사용
+      examStart: schedule.examStart,
+      examEnd: schedule.examEnd,
+      remindState: false, // 기본값 false
+    },
+  });
+
+  return createdExam.id;
+};
