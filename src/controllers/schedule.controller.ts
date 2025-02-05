@@ -4,6 +4,7 @@ import { recommendScheduleService } from "../services/schedule.service.js";
 import { recommendScheduleDto } from "../dtos/schedule.dto.js";
 import { prisma } from "../db.config.js";
 import { AuthRequest } from "../middlewares/auth.middleware.js";
+import dayjs from "dayjs";
 
 export const handleRecommendSchedule = async (
   req: Request,
@@ -102,5 +103,98 @@ export const getDatesByMonth = async (
   } catch (error) {
     console.error("Error fetching dates by month:", error);
     res.status(500).json({ message: "서버 오류가 발생했습니다." });
+  }
+};
+
+export const handleCheckScheduleRegistration = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const certificationId = Number(req.params.certificationId);
+    const scheduleId = Number(req.params.scheduleId);
+    const today = dayjs(); // 현재 날짜
+
+    // 필수 값 확인
+    if (!certificationId || !scheduleId) {
+      res.status(StatusCodes.BAD_REQUEST).json({
+        success: false,
+        message: "유효한 certificationId 및 scheduleId가 필요합니다.",
+      });
+      return;
+    }
+
+    // 스케줄 조회
+    const schedule = await prisma.schedule.findUnique({
+      where: { id: scheduleId, certificationId },
+      select: {
+        registrationStart: true,
+        registrationEnd: true,
+        lateRegistrationStart: true,
+        lateRegistrationEnd: true,
+        examLink: true,
+      },
+    });
+
+    if (!schedule) {
+      res.status(StatusCodes.NOT_FOUND).json({
+        success: false,
+        message: "해당 일정(scheduleId)을 찾을 수 없습니다.",
+      });
+      return;
+    }
+
+    const {
+      registrationStart,
+      registrationEnd,
+      lateRegistrationStart,
+      lateRegistrationEnd,
+      examLink,
+    } = schedule;
+
+    // **📌 현재 접수기간인지 확인 (isBetween 없이 직접 비교)**
+    const isRegistrationOpen =
+      (registrationStart &&
+        registrationEnd &&
+        (today.isAfter(registrationStart) || today.isSame(registrationStart)) &&
+        (today.isBefore(registrationEnd) || today.isSame(registrationEnd))) ||
+      (lateRegistrationStart &&
+        lateRegistrationEnd &&
+        (today.isAfter(lateRegistrationStart) ||
+          today.isSame(lateRegistrationStart)) &&
+        (today.isBefore(lateRegistrationEnd) ||
+          today.isSame(lateRegistrationEnd)));
+
+    if (isRegistrationOpen) {
+      res.status(StatusCodes.OK).json({
+        success: true,
+        message: "현재 접수기간입니다.",
+        examLink,
+      });
+      return;
+    }
+
+    // **📌 접수기간이 미래인지 확인**
+    if (registrationStart && today.isBefore(registrationStart)) {
+      res.status(StatusCodes.OK).json({
+        success: true,
+        message: `아직 접수기간이 아닙니다. 해당 시험의 접수기간은 ${dayjs(
+          registrationStart
+        ).format("YYYY-MM-DD")} ~ ${dayjs(registrationEnd).format(
+          "YYYY-MM-DD"
+        )} 입니다.`,
+      });
+      return;
+    }
+
+    // **📌 접수기간이 종료된 경우**
+    res.status(StatusCodes.OK).json({
+      success: true,
+      message: "접수기간이 종료된 시험입니다. 다른 날짜의 시험을 선택하시기 바랍니다.",
+    });
+  } catch (error) {
+    console.error("시험 접수 확인 중 오류 발생:", error);
+    next(error);
   }
 };
