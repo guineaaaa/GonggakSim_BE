@@ -119,3 +119,21 @@ export const getClosestExams = async (userId: number): Promise<any[]> => {
     ),
   }));
 };
+
+
+// 사용자 닉네임 수정/저장
+const isValidNickname = (nickname: string): boolean => {
+  const nicknameRegex = /^[가-힣a-zA-Z]{2,10}$/; // 한글/영문 (2~10자)
+  return nicknameRegex.test(nickname);
+};
+
+export const updateNickname = async (userEmail: string, nickname: string) => {
+  if (!isValidNickname(nickname)) {
+    return null;
+  }
+
+  return await prisma.user.update({
+    where: { email: userEmail },
+    data: { nickname },
+  });
+};

@@ -2,7 +2,7 @@ import { Request, Response } from "express"
 import { prisma } from "../db.config.js";
 import { StatusCodes } from "http-status-codes";
 import { userConsentDto } from "../dtos/user.dto.js";
-import { userConsent, SuggestionService, getClosestExams } from "../services/user.service.js";
+import { userConsent, SuggestionService, getClosestExams, updateNickname } from "../services/user.service.js";
 import { AuthRequest } from "../middlewares/auth.middleware.js";
 
 // 사용자 정보 수집 API
@@ -117,3 +117,41 @@ export const getHelpDoc = async (req: Request, res: Response) => {
     res.status(StatusCodes.BAD_REQUEST).json({ success: false, message: '도움말 조회 실패'});
   }
 }
+
+// 닉네임 수정/저장 API
+export const postNickname = async (req: Request, res: Response) => {
+  const { user } = req as AuthRequest;
+  const userEmail = user?.email;
+
+  if (!userEmail) {
+    return res.status(StatusCodes.UNAUTHORIZED).json({ success: false, message: '인증이 필요합니다.' });
+  }
+
+  try{
+    const { nickname } = req.body;
+
+    if (!nickname) {
+      return res.status(400).json({ success: false, message: "닉네임을 입력해주세요." });
+    }
+
+    const updatedUser = await updateNickname(userEmail, nickname);
+
+    if (!updatedUser) {
+      return res.status(400).json({
+        success: false,
+        message: "닉네임 형식이 올바르지 않습니다. (2~10자의 한글 또는 영문만 가능)",
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "닉네임이 등록되었습니다.",
+      nickname: updatedUser.nickname,
+    })as any;
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: "서버 오류가 발생했습니다.",
+    });
+  }
+};

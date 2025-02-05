@@ -313,6 +313,75 @@ paths:
                   message:
                     type: string
                     example: "사용자 정보 저장 중 오류가 발생했습니다."
+  
+  /api/v1/users/user-nickname:
+    post:
+      summary: 사용자 닉네임 수정/저장 API
+      description: 사용자 닉네임을 설정합니다.
+      tags:
+        - User
+      parameters:
+        - in: query
+          name: provider
+          required: true
+          schema:
+            type: string
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                nickname:
+                  type: string
+              example:
+                nickname: "코딩고수"
+      responses:
+        "200":
+          description: 성공
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: "닉네임이 등록되었습니다."
+                  nickname:
+                    type: string
+                    example: "코딩고수"
+        "400":
+          description: 실패
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: "닉네임 형식이 올바르지 않습니다. (2~10자의 한글 또는 영문만 가능)"
+        "500":
+          description: 서버 에러
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: "서버 오류가 발생했습니다."
 
   /api/v1/users/suggest-info:
     get:
