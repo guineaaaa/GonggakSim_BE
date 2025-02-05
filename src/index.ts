@@ -14,6 +14,7 @@ import authRoutes from "./routes/authRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
 import scheduleRoutes from "./routes/scheduleRoutes.js";
 import examRoutes from "./routes/examRoutes.js";
+import quizRoutes from "./routes/quizRoutes.js"; 
 
 import { verifyToken } from "./middlewares/auth.middleware.js";
 import { prisma } from "./db.config.js";
@@ -144,6 +145,9 @@ app.get(
   handleGetCertificationsByCategory
 );
 app.get("/api/v1/certifications/:id", verifyToken, handleGetCertificationById);
+
+//퀴즈 API
+app.use("/api/v1/quiz", quizRoutes);
 
 
 // 전역 오류 처리 미들웨어
