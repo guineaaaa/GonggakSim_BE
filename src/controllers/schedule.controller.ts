@@ -153,7 +153,7 @@ export const handleCheckScheduleRegistration = async (
       examLink,
     } = schedule;
 
-    // **📌 현재 접수기간인지 확인 (isBetween 없이 직접 비교)**
+    // 현재 접수기간인지 확인 (isBetween 없이 직접 비교)
     const isRegistrationOpen =
       (registrationStart &&
         registrationEnd &&
@@ -175,7 +175,7 @@ export const handleCheckScheduleRegistration = async (
       return;
     }
 
-    // **📌 접수기간이 미래인지 확인**
+    // 접수기간이 미래인지 확인
     if (registrationStart && today.isBefore(registrationStart)) {
       res.status(StatusCodes.OK).json({
         success: true,
@@ -188,7 +188,7 @@ export const handleCheckScheduleRegistration = async (
       return;
     }
 
-    // **📌 접수기간이 종료된 경우**
+    // 접수기간이 종료된 경우
     res.status(StatusCodes.OK).json({
       success: true,
       message: "접수기간이 종료된 시험입니다. 다른 날짜의 시험을 선택하시기 바랍니다.",
