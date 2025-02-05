@@ -2,7 +2,7 @@
 name: ✨ 기능 요청
 about: 새로운 기능을 제안하세요.
 title: '[기능 요청]'
-labels: enhancement
+labels: feature
 assignees: ''
 ---
 
