@@ -23,8 +23,8 @@ const scheduledJobs = new Map<number, cron.ScheduledTask[]>();
 
 // 방해 금지 시간대 외에 알림 전송
 export const scheduleQuizNotifications = async (userId: number) => {
-  // 기존 스케줄 취소
-  if (scheduledJobs.has(userId)) {
+  // 기존 스케줄 취소 (사용자가 기존 알림을 변경하면 기존 크론 작업을 삭제해야한다)
+  if (scheduledJobs.has(userId)) { 
     const jobs = scheduledJobs.get(userId)!;
     jobs.forEach((job) => job.stop());
     scheduledJobs.delete(userId);
@@ -33,13 +33,17 @@ export const scheduleQuizNotifications = async (userId: number) => {
   // 사용자 알림 설정 조회
   const notifications = await getNotificationSettingsByUserId(userId);
 
+  // 새로운 cron 작업을 저장할 배열열
   const userJobs: cron.ScheduledTask[] = [];
 
   for (const notification of notifications) {
+    // 사용자의 알림 설정에서 알림 받을 요일, 퀴즈 유형을 가져온다다
     const days = notification.days as Day[];
     const quizTypes = notification.quizTypes as QuizType[];
 
     for (const day of days) {
+      // 요일을 크론 형식으로 변환함
+      // DnD의 startTime, endTime을 분 단위로 변환환
       const dayOfWeek = dayToCronFormat(day);
       const startMinutes = timeToMinutes(notification.startTime);
       const endMinutes = timeToMinutes(notification.endTime);
