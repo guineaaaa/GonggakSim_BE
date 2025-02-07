@@ -15,6 +15,7 @@ import userRoutes from "./routes/userRoutes.js";
 import scheduleRoutes from "./routes/scheduleRoutes.js";
 import examRoutes from "./routes/examRoutes.js";
 import quizRoutes from "./routes/quizRoutes.js"; 
+import certificationAlramRoutes from "./routes/certificationAlramRoutes.js";
 
 import { verifyToken } from "./middlewares/auth.middleware.js";
 import { prisma } from "./db.config.js";
@@ -122,6 +123,7 @@ app.use("/oauth2", naverRoutes); // 네이버 인증 라우트
 app.use("/oauth2", authRoutes); // 로그아웃, 토큰 갱신, 토큰 검증, 이용약관 동의 라우트
 app.use("/api/v1/users", userRoutes); // 사용자 정보 수집 API, 유사 사용자 추천 API, 회원정보 수정 API, 도움말 확인
 app.use("/api/v1", examRoutes); // 자격증 시험 일정 추가 라우트
+app.use("/api/v1", certificationAlramRoutes); // 시험 일정 알람 생성 라우트
 
 // 캘린더 API
 app.post("/api/v1/calander/exams", verifyToken, handleAddExam);
