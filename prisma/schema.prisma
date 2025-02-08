@@ -59,6 +59,7 @@ model Notification {
   endTime         String
   quizTypes       Json
   certificationId Int
+  selectedQuizRanges Json?
   isActive        Boolean       @default(true)
   createdAt       DateTime      @default(now())
   updatedAt       DateTime      @updatedAt
@@ -73,6 +74,7 @@ model QuizRange {
   rangeDetails     String
   quizResults      QuizResult[]
 }
+
 
 model QuizResult {
   id          Int        @id @default(autoincrement())
