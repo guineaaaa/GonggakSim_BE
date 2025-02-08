@@ -107,6 +107,7 @@ model CertificationAlram {
   id              Int       @id @default(autoincrement())
   schedule        Schedule  @relation(fields: [scheduleId], references: [id])
   scheduleId      Int
+  userId          Int
   alramState      Boolean   @default(false)
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt

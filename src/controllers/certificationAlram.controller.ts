@@ -1,33 +1,25 @@
-import { Request, Response, NextFunction } from "express";
-import { StatusCodes } from "http-status-codes";
-import { createCertificationAlarm } from "../services/certificationAlram.service.js";
+import { Request, Response } from "express";
+import { createOrUpdateCertificationAlarm } from "../services/certificationAlram.service.js";
 
-export const handleCreateCertificationAlarm = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-): Promise<void> => {
+export const handleCreateOrUpdateCertificationAlarm = async (req: Request, res: Response): Promise<void> => {
   try {
-    const certificationId = Number(req.params.certificationId);
-    const { scheduleId } = req.body;
+    const { userId, scheduleId } = req.body;
 
-    if (!certificationId || !scheduleId) {
-      res.status(StatusCodes.BAD_REQUEST).json({
-        success: false,
-        message: "유효한 certificationId 및 scheduleId가 필요합니다.",
-      });
+    if (!userId || !scheduleId) {
+      res.status(400).json({ success: false, message: "userId와 scheduleId가 필요합니다." });
       return;
     }
 
-    const createdAlarm = await createCertificationAlarm(certificationId, scheduleId);
-
-    res.status(StatusCodes.CREATED).json({
-      success: true,
-      message: "알림 설정이 성공적으로 등록되었습니다.",
-      data: createdAlarm,
-    });
-  } catch (error) {
-    console.error("Certification Alarm 생성 중 오류 발생:", error);
-    next(error); 
+    const result = await createOrUpdateCertificationAlarm(userId, scheduleId);
+    
+    res.status(200).json({ success: true, message: result.message });
+    return; 
+  } catch (error: any) {
+    if (error.message === "이미 설정된 알람입니다.") {
+      res.status(400).json({ success: false, message: error.message });
+      return;
+    }
+    res.status(500).json({ success: false, message: "서버 오류 발생", error: error.message });
+    return;
   }
 };
