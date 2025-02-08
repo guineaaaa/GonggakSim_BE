@@ -1,22 +1,33 @@
 import { prisma } from "../db.config.js";
 
-export const createCertificationAlarm = async (certificationId: number, scheduleId: number) => {
-  // 해당 스케줄이 존재하는지 확인
-  const schedule = await prisma.schedule.findUnique({
-    where: { id: scheduleId, certificationId },
+export const createOrUpdateCertificationAlarm = async (userId: number, scheduleId: number) => {
+  // 1️. 기존 알람 조회
+  const existingAlarm = await prisma.certificationAlram.findFirst({
+    where: { userId, scheduleId },
   });
 
-  if (!schedule) {
-    throw new Error("해당 certificationId와 scheduleId에 대한 일정이 존재하지 않습니다.");
+  if (existingAlarm) {
+    if (existingAlarm.alramState) {
+      throw new Error("이미 설정된 알람입니다.");
+    }
+
+    // 2. 기존 알람이 있다면 상태 업데이트 (false → true)
+    await prisma.certificationAlram.update({
+      where: { id: existingAlarm.id },
+      data: { alramState: true },
+    });
+
+    return { message: "알람이 활성화되었습니다.", updated: true };
   }
 
-  // CertificationAlram 생성
-  const certificationAlarm = await prisma.certificationAlram.create({
+  // 3️. 새로운 알람 생성
+  const newAlarm = await prisma.certificationAlram.create({
     data: {
+      userId,
       scheduleId,
       alramState: true, // 기본값 true
     },
   });
 
-  return certificationAlarm;
+  return { message: "새로운 알람이 생성되었습니다.", alarmId: newAlarm.id };
 };
