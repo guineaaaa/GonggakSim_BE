@@ -26,9 +26,9 @@ export const handleDnDNotification = async (
     const result = await notificationService.updateNotificationSettings(data);
 
     res.status(StatusCodes.OK).json({
-      success: true,
+      status: "success",
+      message: "Notification settings saved successfully",
       data: result,
-      message: result.message,
     });
     console.log(data);
   } catch (error: any) {
