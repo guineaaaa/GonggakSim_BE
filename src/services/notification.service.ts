@@ -25,6 +25,7 @@ export class NotificationService {
     // 알림을 방해 금지 시간대 외에 전송하도록 스케줄링
     await scheduleQuizNotifications(data.userId);
 
-    return { message: "알림 설정이 완료되었습니다." };
+    // return { message: "알림 설정이 완료되었습니다." };
+    return data;
   }
 }
