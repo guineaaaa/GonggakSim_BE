@@ -15,8 +15,9 @@ import userRoutes from "./routes/userRoutes.js";
 import scheduleRoutes from "./routes/scheduleRoutes.js";
 import examRoutes from "./routes/examRoutes.js";
 import quizRoutes from "./routes/quizRoutes.js"; 
+import certificationAlramRoutes from "./routes/certificationAlramRoutes.js";
 
-import { verifyToken } from "./middlewares/auth.middleware.js";
+import { verifyJWT } from "./middlewares/auth.middleware.js";
 import { prisma } from "./db.config.js";
 
 //swagger
@@ -122,32 +123,33 @@ app.use("/oauth2", naverRoutes); // 네이버 인증 라우트
 app.use("/oauth2", authRoutes); // 로그아웃, 토큰 갱신, 토큰 검증, 이용약관 동의 라우트
 app.use("/api/v1/users", userRoutes); // 사용자 정보 수집 API, 유사 사용자 추천 API, 회원정보 수정 API, 도움말 확인
 app.use("/api/v1", examRoutes); // 자격증 시험 일정 추가 라우트
+app.use("/api/v1", certificationAlramRoutes); // 시험 일정 알람 생성 라우트
 
 // 캘린더 API
-app.post("/api/v1/calander/exams", verifyToken, handleAddExam);
-app.get("/api/v1/calander/exams", verifyToken, handleGetExam);
-app.delete("/api/v1/calander/exams/:examId", verifyToken, handleDeleteExam); //삭제하려는 시험 id
+app.post("/api/v1/calander/exams", verifyJWT, handleAddExam);
+app.get("/api/v1/calander/exams", verifyJWT, handleGetExam);
+app.delete("/api/v1/calander/exams/:examId", verifyJWT, handleDeleteExam); //삭제하려는 시험 id
 
 // 알림 방해금지 시간대 설정 API
-app.post("/api/v1/notification/settings", verifyToken, handleDnDNotification);
+app.post("/api/v1/notification/settings", verifyJWT, handleDnDNotification);
 
 // AI 시험 추천 API
-app.post("/api/v1/schedule/recommendation", verifyToken, handleRecommendSchedule);
+app.post("/api/v1/schedule/recommendation", verifyJWT, handleRecommendSchedule);
 
 // 자격증 검색 API
-app.get("/api/v1/certifications/search", verifyToken, handleGetCertifications);
+app.get("/api/v1/certifications/search", verifyJWT, handleGetCertifications);
 
 //자격증 목록 조회 API
-app.get("/api/v1/certifications", verifyToken, handleGetAllCertifications);
+app.get("/api/v1/certifications", verifyJWT, handleGetAllCertifications);
 app.get(
   "/api/v1/certifications/category/:category",
-  verifyToken,
+  verifyJWT,
   handleGetCertificationsByCategory
 );
-app.get("/api/v1/certifications/:id", verifyToken, handleGetCertificationById);
+app.get("/api/v1/certifications/:id", verifyJWT, handleGetCertificationById);
 
 //퀴즈 API
-app.use("/api/v1/quiz", quizRoutes);
+app.use("/api/v1/quiz", verifyJWT, quizRoutes);
 
 
 // 전역 오류 처리 미들웨어
