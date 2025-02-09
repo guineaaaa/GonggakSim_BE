@@ -2,29 +2,29 @@ import { prisma } from '../db.config.js';
 import { Request, Response } from 'express';
 import { refreshKakaoToken, refreshNaverToken } from '../utils/auth.utils.js';
 
-// 토큰 갱신
-export const refreshAccessToken = async (accessEmail: string) => {
-    const user = await prisma.user.findUnique({
-        where: { email: accessEmail }
-    });
+// // 토큰 갱신
+// export const refreshAccessToken = async (accessEmail: string) => {
+//     const user = await prisma.user.findUnique({
+//         where: { email: accessEmail }
+//     });
 
-    if (!user || !user.oauthRefreshToken) {
-        throw new Error("리프레시 토큰이 없습니다.");
-    }
+//     if (!user || !user.oauthRefreshToken) {
+//         throw new Error("리프레시 토큰이 없습니다.");
+//     }
 
-    let newOAuthAccessToken;
-    switch (user.oauthProvider) {
-        case 'kakao':
-            newOAuthAccessToken = await refreshKakaoToken(user.oauthRefreshToken);
-            break;
-        case 'naver':
-            newOAuthAccessToken = await refreshNaverToken(user.oauthRefreshToken);
-            break;
-        default:
-            throw new Error("지원하지 않는 OAuth 제공자입니다.");
-    }
-    return newOAuthAccessToken;
-}
+//     let newOAuthAccessToken;
+//     switch (user.oauthProvider) {
+//         case 'kakao':
+//             newOAuthAccessToken = await refreshKakaoToken(user.oauthRefreshToken);
+//             break;
+//         case 'naver':
+//             newOAuthAccessToken = await refreshNaverToken(user.oauthRefreshToken);
+//             break;
+//         default:
+//             throw new Error("지원하지 않는 OAuth 제공자입니다.");
+//     }
+//     return newOAuthAccessToken;
+// }
 
 // 세션 삭제
 export const clearSession = async (req: Request, res: Response, successMessage: string, snsLogoutUrl?: string) => {

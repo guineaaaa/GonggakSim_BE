@@ -1,5 +1,6 @@
 import express from "express";
 import { verifyGoogleToken } from "../auth.config.js";
+import { generateJWTToken } from "../utils/jwt.utils.js";
 import { prisma } from "../db.config.js";
 
 const router = express.Router();
@@ -29,6 +30,8 @@ router.post("/login/google", async (req, res): Promise<any> => {
     let user = await prisma.user.findFirst({ where: { email, oauthProvider: "google" } });
     const isNewUser = !user;
 
+    const jwtToken = generateJWTToken(payload);
+
     // 신규 사용자라면 저장
     if (!user) {
       user = await prisma.user.create({
@@ -45,13 +48,10 @@ router.post("/login/google", async (req, res): Promise<any> => {
     return res.status(200).json({
       success: true,
       message: "로그인 성공",
-      user: {
-        id: user.id,
-        email: user.email,
-        isNewUser,
-        oauthProvider: user.oauthProvider,
-      },
-    });
+      accessToken: jwtToken,
+      isNewUser,
+      oauthProvider: user.oauthProvider,
+      });
   } catch (error) {
     console.error("Google 로그인 오류:", error);
     return res.status(500).json({ success: false, message: "서버 오류 발생" });
