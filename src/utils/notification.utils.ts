@@ -21,6 +21,31 @@ const dayToCronFormat = (day: Day): number => {
 // Cron 작업을 관리하기 위한 Map
 const scheduledJobs = new Map<number, cron.ScheduledTask[]>();
 
+// 성능 개선 - DND 시간대를 제외한 allowed 분을 산술 연산으로 계산하는 함수
+const getRandomAllowedMinute = (
+  startMinutes: number,
+  endMinutes: number
+): number => {
+  // 첫번째 구간: 0~startMinutes-1의 길이
+  const interval1Length = startMinutes;
+  // 두번째 구간: endMinutes+1~1439의 길이
+  const interaVal2Length = 1440 - (endMinutes + 1);
+  const totalAllowed = interval1Length + interaVal2Length;
+
+  if (totalAllowed === 0) {
+    return -1;
+  }
+
+  // 두 구간의 총 길이에서 무작위 인덱스 뽑기
+  const randomIndex = Math.floor(Math.random() * totalAllowed);
+  //인덱스가 첫번째 구간에 속하면 그대로 사용
+  if (randomIndex < interval1Length) {
+    return randomIndex;
+  }
+  // 두번째 구간이면 offset 추가해 계산
+  return endMinutes + 1 + (randomIndex - interval1Length);
+};
+
 // 방해 금지 시간대 외에 알림 전송
 // 요청된 요일마다 DND를 제외한 시간대 (allowed time slots)를 계산하고,
 // 그중 한 시각 (분단위)를 랜덤으로 선택해 매주 해당 요일에 알림을 전송하도록 예약약
@@ -45,26 +70,17 @@ export const scheduleQuizNotifications = async (userId: number) => {
       const startMinutes = timeToMinutes(notification.startTime);
       const endMinutes = timeToMinutes(notification.endTime);
 
-      // 하루 전체(0 ~ 1439분) 중 DND 시간대를 제외한 allowed minutes 배열 생성
-      const allowedMinutes: number[] = [];
+      // 산술 연산을 통해 allowed minute을 계산 (반복문 없는 O(1) 연산)
+      const randomMinuteOfDay = getRandomAllowedMinute(
+        startMinutes,
+        endMinutes
+      );
 
-      // [0, startMinutes) 구간 (DND 시작 전)
-      for (let m = 0; m < startMinutes; m++) {
-        allowedMinutes.push(m);
-      }
-      // (endMinutes, 1439] 구간 (DND 종료 후)
-      for (let m = endMinutes + 1; m < 1440; m++) {
-        allowedMinutes.push(m);
-      }
-
-      if (allowedMinutes.length === 0) {
-        console.warn(`DND 설정으로 인해 ${day}요일에 알림 예약 불가`);
+      if (randomMinuteOfDay === -1) {
+        console.warn(`DND 설정으로 인해 ${day} 요일에 알림 예약 불가`);
         continue;
       }
 
-      // allowedMinutes 중 하나를 랜덤하게 선택
-      const randomIndex = Math.floor(Math.random() * allowedMinutes.length);
-      const randomMinuteOfDay = allowedMinutes[randomIndex];
       const hour = Math.floor(randomMinuteOfDay / 60);
       const minuteInHour = randomMinuteOfDay % 60;
 
