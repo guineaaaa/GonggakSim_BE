@@ -68,14 +68,19 @@ paths:
                   message:
                     type: string
                     example: "반환된 토큰이 없습니다."
-  /oauth2/login:
-    get:
-      summary: 로그인 API
+
+  /oauth2/login/google:
+    post:
+      summary: 구글 로그인 API
       description: 사용자 로그인을 처리합니다.(swagger에서는 불가능)
       tags:
         - OAuth
-      security:
-        - BearerAuth: []
+      parameters:
+        - in: body
+          name: idToken
+          required: true
+          schema:
+            type: string
       responses:
         "200":
           description: 로그인 성공
@@ -84,6 +89,77 @@ paths:
               schema:
                 type: object
                 properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: "로그인 완료"
+                  accessToken: 
+                    type: string
+                    example: "jwtToken"
+                  isNewUser:
+                    type: boolean
+                    example: true
+                  oauthProvider:
+                    type: string
+                    example: "google"         
+        "400":
+          description: 로그인 에러
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: "idToken이 필요합니다."
+        "401":
+          description: 구글 에러
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: "Google 인증 실패"
+        "500":
+          description: 서버 에러
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: string
+                    example: false
+                  message:
+                    type: string
+                    example: "서버 오류 발생"                  
+  /oauth2/login/kakao:
+    get:
+      summary: 카카오 로그인 API
+      description: 사용자 로그인을 처리합니다.
+      tags:
+        - OAuth
+      responses:
+        "200":
+          description: 로그인 성공
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
                   message:
                     type: string
                     example: "로그인 완료"
@@ -94,12 +170,46 @@ paths:
               schema:
                 type: object
                 properties:
-                  errorCode:
+                  success:
+                    type: boolean
+                    example: false
+                  message:
                     type: string
-                    example: "login_error"
-                  reason:
+                    example: "토큰 생성에 실패했습니다."
+
+  /oauth2/login/naver:
+    get:
+      summary: 네이버 로그인 API
+      description: 사용자 로그인을 처리합니다.
+      tags:
+        - OAuth
+      responses:
+        "200":
+          description: 로그인 성공
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
                     type: string
-                    example: "로그인 실패"
+                    example: "로그인 완료"
+        "500":
+          description: 서버 에러
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: "토큰 생성에 실패했습니다."
   /oauth2/logout:
     post:
       summary: 로그아웃 API
