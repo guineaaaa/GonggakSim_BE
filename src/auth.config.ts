@@ -32,6 +32,8 @@ export const verifyGoogleToken = async (idToken: string) => {
 
 const googleVerify = async (idToken: string) => {
   try {
+    console.log("Received idToken: ", idToken);
+    
     const payload = await verifyGoogleToken(idToken);
     
     if (!payload?.email) {
