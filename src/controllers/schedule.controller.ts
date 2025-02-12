@@ -75,20 +75,23 @@ export const getDatesByMonth = async (
     const dateScheduleMap: { date: string; scheduleId: number }[] = [];
     schedules.forEach((schedule) => {
       if (schedule.examStart && schedule.examEnd) {
-        const currentDate = new Date(schedule.examStart);
-        const endDate = new Date(schedule.examEnd);
-
-        while (currentDate <= endDate) {
-          if (
-            currentDate.getFullYear() === startOfMonth.getFullYear() &&
-            currentDate.getMonth() === startOfMonth.getMonth()
-          ) {
+        const examStart = new Date(schedule.examStart);
+        const examEnd = new Date(schedule.examEnd);
+        
+        // 요청한 월의 날짜 범위와 시험 기간의 교집합 계산
+        const overlapStart = examStart < startOfMonth ? startOfMonth : examStart;
+        const overlapEnd = examEnd > endOfMonth ? endOfMonth : examEnd;
+        
+        if (overlapStart <= overlapEnd) {
+          const diffDays = Math.floor((overlapEnd.getTime() - overlapStart.getTime()) / (1000 * 60 * 60 * 24));
+          for (let i = 0; i <= diffDays; i++) {
+            const currentDate = new Date(overlapStart);
+            currentDate.setDate(currentDate.getDate() + i);
             dateScheduleMap.push({
               date: currentDate.toISOString().split("T")[0],
               scheduleId: schedule.id,
             });
           }
-          currentDate.setDate(currentDate.getDate() + 1);
         }
       }
     });
