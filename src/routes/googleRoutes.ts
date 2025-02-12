@@ -2,6 +2,7 @@ import express from "express";
 import { verifyGoogleToken } from "../auth.config.js";
 import { generateJWTToken } from "../utils/jwt.utils.js";
 import { prisma } from "../db.config.js";
+import { StatusCodes } from "http-status-codes";
 
 const router = express.Router();
 
@@ -19,7 +20,7 @@ router.post("/login/google", async (req, res): Promise<any> => {
     // idToken 검증 -> Google 사용자 정보 가져오기
     const payload = await verifyGoogleToken(idToken);
     if (!payload?.email) {
-      return res.status(400).json({ success: false, message: "Google 인증 실패" });
+      return res.status(401).json({ success: false, message: "Google 인증 실패" });
     }
 
     const email = payload.email;
