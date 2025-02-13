@@ -5,10 +5,10 @@
   "description": "<img src=\"https://github.com/user-attachments/assets/81bbb2fa-eafd-4689-b84e-42a9b819c13a\" width=\"800\" height=\"450\"/>",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
     "prebuild": "npm install @esbuild/linux-x64",
     "build": "tsx scripts/build.ts",
     "start": "node dist/index.cjs",
+    "start:pm2": "pm2 start dist/index.cjs --name app",
     "api-docs": "swagger-cli bundle ./src/swagger/openapi.yaml --outfile build/swagger.yaml --type yaml",
     "predev": "npm run api-docs",
     "dev": "nodemon -e js,json,prisma,ts --exec \"prisma generate && tsx src/index.ts\""
