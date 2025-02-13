@@ -96,7 +96,6 @@ export const handleAddExamByCertificationSchedule = async (
     const { userId, scheduleId } = req.body;
     const certificationId = Number(req.params.certification_id);
 
-    // 필수 값 확인
     if (!userId || !scheduleId || !certificationId) {
       res.status(StatusCodes.BAD_REQUEST).json({
         success: false,
@@ -105,11 +104,17 @@ export const handleAddExamByCertificationSchedule = async (
       return;
     }
 
-    // Certification 조회
-    const certification = await prisma.certification.findUnique({
-      where: { id: certificationId },
-      select: { name: true },
-    });
+    // 자격증 조회와 일정 조회를 병렬로 실행
+    const [certification, schedule] = await Promise.all([
+      prisma.certification.findUnique({
+        where: { id: certificationId },
+        select: { name: true },
+      }),
+      prisma.schedule.findUnique({
+        where: { id: scheduleId },
+        select: { examStart: true, examEnd: true },
+      }),
+    ]);
 
     if (!certification) {
       res.status(StatusCodes.NOT_FOUND).json({
@@ -118,13 +123,6 @@ export const handleAddExamByCertificationSchedule = async (
       });
       return;
     }
-
-    // Schedule 조회
-    const schedule = await prisma.schedule.findUnique({
-      where: { id: scheduleId },
-      select: { examStart: true, examEnd: true },
-    });
-
     if (!schedule) {
       res.status(StatusCodes.NOT_FOUND).json({
         success: false,
@@ -132,12 +130,12 @@ export const handleAddExamByCertificationSchedule = async (
       });
       return;
     }
-    // 중복 검사 로직
+
     const existingExam = await prisma.exam.findFirst({
       where: {
         userId,
         title: certification.name,
-        examStart: schedule.examStart ? new Date(schedule.examStart) : new Date(), // null 방지
+        examStart: schedule.examStart ? new Date(schedule.examStart) : new Date(),
       },
     });
 
@@ -150,7 +148,7 @@ export const handleAddExamByCertificationSchedule = async (
     }
 
     // Exam 생성
-    await prisma.exam.create({
+    const createdExam = await prisma.exam.create({
       data: {
         userId,
         title: certification.name,
@@ -166,6 +164,6 @@ export const handleAddExamByCertificationSchedule = async (
     });
   } catch (error) {
     console.error("시험 추가 중 오류 발생:", error);
-    next(error); // 오류 전파
+    next(error);
   }
 };
