@@ -1,6 +1,7 @@
 import { prisma } from "../db.config.js";
+import { UserWithDetails } from "../dtos/user.dto.js";
 
-// 사용자 정보 수집 repo
+/** 사용자 정보 수집 repository */ 
 export const updateConsent = async (
   userId: number,
   data: {
@@ -46,22 +47,7 @@ export const updateConsent = async (
   });
 };
 
-
-// 유사 사용자 시험 추천 repo
-
-interface UserSimilarityInfo {
-  user: UserWithDetails;
-  similarity: number;
-}
-
-interface UserWithDetails {
-  id: number;
-  age: number | null;
-  employmentStatus: string | null;
-  users: { category: { id: number; name: string } }[];
-  exams: { id: number; title: string }[];
-}
-
+/** 유사 사용자 시험 추천 repository */
 export class SuggestionRepository {
   static async getUserInfo(userEmail: string) {
     return prisma.user.findUnique({
@@ -116,21 +102,43 @@ export class SuggestionRepository {
     });
   }
 
-  static async findSimilarUsersCertifications(userInfo: UserWithDetails) {
-    const categoryNames = userInfo.users.map((uc) => uc.category.name);
-    
+  // 사용자 캘린더의 시험을 기반으로 Certification에 등록되어있는 자격증만 최대 3개 조회
+  static async getCertificationsByExamTitles(examTitles: string[]): Promise<{ id: number; name: string; category: string }[]> {
+    if (examTitles.length === 0) return [];
     return prisma.certification.findMany({
-      where: { 
-        category: { in: categoryNames },
+      where: {
+        name: { in: examTitles },
+      },
+      select: {
+        id: true,
+        name: true,
+        category: true,
       },
       take: 3,
     });
   }
 
+  // static async findSimilarUsersCertifications(userInfo: UserWithDetails) {
+  //   const categoryNames = userInfo.users.map((uc) => uc.category.name);
+    
+  //   return prisma.certification.findMany({
+  //     where: { 
+  //       category: { in: categoryNames },
+  //     },
+  //     take: 3,
+  //   });
+  // }
+
+  // 신규 사용자와 일치하는 사용자가 없다면, 랜덤으로 certification에서 자동 3개 추천
   static async findDefaultCertificationsByCategory(categoryNames: string[]) {
     return prisma.certification.findMany({
       where: { 
         category: { in: categoryNames },
+      },
+      select: {
+        id: true,
+        name: true,
+        category: true,
       },
       take: 3,
       orderBy: { category: 'asc' },
