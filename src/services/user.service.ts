@@ -37,63 +37,75 @@ export class SuggestionService {
       const similarUsers = await this.findSimilarUsers(userInfo);
 
       if (similarUsers.length > 0) {
-        const recommendedCertifications = await SuggestionRepository.findSimilarUsersCertifications(userInfo);
+        // 유사 사용자들의 exam 제목 추출 (중복 제거)
+        const examTitlesSet = new Set<string>();
+        similarUsers.forEach(({ user }) => {
+          user.exams.forEach((exam) => {
+            examTitlesSet.add(exam.title);
+          });
+        });
+        const examTitles = Array.from(examTitlesSet);
+  
+        // exam 제목과 Certification.name이 일치하는 자격증 조회
+        const recommendedCertifications = await SuggestionRepository.getCertificationsByExamTitles(examTitles);
         return this.mapToDto(recommendedCertifications);
       }
-
+  
       return await this.getDefaultRecommendations(userInfo);
     } catch (error) {
-      console.error('추천 생성 중 오류:', error);
+      console.error("추천 생성 중 오류:", error);
       throw error;
     }
   }
 
+
+  // 유사 사용자 찾기: 전체 사용자 중에서 현재 사용자와의 유사도 계산
   private static async findSimilarUsers(userInfo: UserWithDetails): Promise<UserSimilarityInfo[]> {
     const allUsers = await SuggestionRepository.getAllUsersWithCategories();
-
+  
     return allUsers
       .map((candidate) => ({
         user: candidate,
-        similarity: this.calculateSimilarity(userInfo, candidate)
+        similarity: this.calculateSimilarity(userInfo, candidate),
       }))
       .filter(({ similarity }) => similarity >= 0.5)
       .sort((a, b) => b.similarity - a.similarity)
       .slice(0, 3);
   }
-
+  
+  // 유사도 계산 함수
   private static calculateSimilarity(user: UserWithDetails, candidate: UserWithDetails): number {
     let score = 0;
-
+  
     // 나이 점수 (가중치 30%)
-    if (user.age && candidate.age) {
+    if (user.age !== null && candidate.age !== null) {
       const ageDiff = Math.abs(user.age - candidate.age);
       const ageScore = ageDiff <= 5 ? 1 : 0;
       score += ageScore * 0.3;
     }
-
+  
     // 관심 카테고리 점수 (가중치 50%)
     const userCategories = new Set(user.users.map((uc) => uc.category.name));
     const candidateCategories = new Set(candidate.users.map((uc) => uc.category.name));
-    const commonCategories = [...userCategories].filter((c) => candidateCategories.has(c)).length;
-    const categoryScore = userCategories.size > 0 
-      ? (commonCategories / userCategories.size) * 100 
-      : 0;
+    const commonCategoriesCount = [...userCategories].filter((cat) => candidateCategories.has(cat)).length;
+    const categoryScore = userCategories.size > 0 ? (commonCategoriesCount / userCategories.size) * 100 : 0;
     score += (categoryScore / 100) * 0.5;
-
+  
     // 고용 상태 점수 (가중치 20%)
     const employmentScore = user.employmentStatus === candidate.employmentStatus ? 1 : 0;
     score += employmentScore * 0.2;
-
+  
     return score;
   }
-
+  
+  // 유사 사용자 없는 경우: 사용자의 관심 카테고리에 기반한 자격증 추천
   private static async getDefaultRecommendations(userInfo: UserWithDetails): Promise<SuggestInfoDto[]> {
     const categoryNames = userInfo.users.map((uc) => uc.category.name);
-    const defaultRecommendations = await SuggestionRepository.findDefaultCertificationsByCategory(categoryNames);
-    return this.mapToDto(defaultRecommendations);
+    const defaultCertifications = await SuggestionRepository.findDefaultCertificationsByCategory(categoryNames);
+    return this.mapToDto(defaultCertifications);
   }
-
-  private static mapToDto(certifications: Array<Certification>): SuggestInfoDto[] {
+  
+  private static mapToDto(certifications: { id: number; name: string; category: string }[]): SuggestInfoDto[] {
     return certifications.map((cert) => ({
       id: cert.id,
       name: cert.name,
