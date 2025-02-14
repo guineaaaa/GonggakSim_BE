@@ -14,10 +14,6 @@ export const searchCertifications = async ({
   const { query: searchQuery, category: searchCategory } =
     mapQueryToCertificationSearch({ query, category });
 
-  if (!searchQuery) {
-    throw new Error("검색어(query)는 필수 항목 입니다.");
-  }
-
   const certifications = await findCertifications(
     searchQuery,
     searchCategory ?? undefined

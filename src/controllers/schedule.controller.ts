@@ -46,7 +46,9 @@ export const getDatesByMonth = async (
     const month = Number(req.params.month);
 
     if (!certificationId || isNaN(month) || month < 1 || month > 12) {
-      res.status(400).json({ message: "유효한 자격증 ID와 월 정보를 제공해주세요." });
+      res
+        .status(400)
+        .json({ message: "유효한 자격증 ID와 월 정보를 제공해주세요." });
       return;
     }
 
@@ -77,13 +79,17 @@ export const getDatesByMonth = async (
       if (schedule.examStart && schedule.examEnd) {
         const examStart = new Date(schedule.examStart);
         const examEnd = new Date(schedule.examEnd);
-        
+
         // 요청한 월의 날짜 범위와 시험 기간의 교집합 계산
-        const overlapStart = examStart < startOfMonth ? startOfMonth : examStart;
+        const overlapStart =
+          examStart < startOfMonth ? startOfMonth : examStart;
         const overlapEnd = examEnd > endOfMonth ? endOfMonth : examEnd;
-        
+
         if (overlapStart <= overlapEnd) {
-          const diffDays = Math.floor((overlapEnd.getTime() - overlapStart.getTime()) / (1000 * 60 * 60 * 24));
+          const diffDays = Math.floor(
+            (overlapEnd.getTime() - overlapStart.getTime()) /
+              (1000 * 60 * 60 * 24)
+          );
           for (let i = 0; i <= diffDays; i++) {
             const currentDate = new Date(overlapStart);
             currentDate.setDate(currentDate.getDate() + i);
@@ -194,7 +200,8 @@ export const handleCheckScheduleRegistration = async (
     // 접수기간이 종료된 경우
     res.status(StatusCodes.OK).json({
       success: true,
-      message: "접수기간이 종료된 시험입니다. 다른 날짜의 시험을 선택하시기 바랍니다.",
+      message:
+        "접수기간이 종료된 시험입니다. 다른 날짜의 시험을 선택하시기 바랍니다.",
     });
   } catch (error) {
     console.error("시험 접수 확인 중 오류 발생:", error);
