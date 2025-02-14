@@ -67,8 +67,11 @@ jobs:
 
             [Service]
             User=${USER}
-            ExecStart=/usr/bin/npm run start --prefix /opt/app/
+            WorkingDirectory=/opt/app
+            ExecStart=/usr/bin/npm run start
             Restart=always
+            StandardOutput=inherit
+            StandardError=inherit
 
             [Install]
             WantedBy=multi-user.target" | sudo tee /etc/systemd/system/app.service
