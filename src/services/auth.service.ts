@@ -1,6 +1,9 @@
 import { prisma } from '../db.config.js';
 import { Request, Response } from 'express';
-import { refreshKakaoToken, refreshNaverToken } from '../utils/auth.utils.js';
+import bcrypt from "bcrypt";
+import { AuthRepository } from '../repositories/auth.repository.js';
+import { LoginDTO, LoginResponseDTO } from '../dtos/auth.dto.js';
+import { generateJWTToken } from '../utils/jwt.utils.js';
 
 // // 토큰 갱신
 // export const refreshAccessToken = async (accessEmail: string) => {
@@ -25,6 +28,72 @@ import { refreshKakaoToken, refreshNaverToken } from '../utils/auth.utils.js';
 //     }
 //     return newOAuthAccessToken;
 // }
+
+// 로그인, 회원가입
+export class AuthService {
+  private authRepository: AuthRepository;
+
+  constructor() {
+    this.authRepository = new AuthRepository();
+  }
+
+  async login(loginDTO: LoginDTO): Promise<LoginResponseDTO> {
+    const user = await this.authRepository.findUserByEmail(loginDTO.email);
+    
+    if (!user) {
+      throw new Error('사용자를 찾을 수 없습니다.');
+    }
+
+    // 비밀번호가 없는 경우 (SNS 로그인 사용자)
+    if (!user.password) {
+      throw new Error('이메일/비밀번호로 로그인할 수 없는 계정입니다.');
+    }
+
+    const isPasswordValid = await bcrypt.compare(loginDTO.password, user.password);
+    
+    if (!isPasswordValid) {
+      throw new Error('비밀번호가 일치하지 않습니다.');
+    }
+
+    const token = generateJWTToken({
+      id: user.id,
+      email: user.email
+    });
+
+    return {
+      id: user.id,
+      email: user.email,
+      token
+    };
+  }
+
+  async register(loginDTO: LoginDTO): Promise<LoginResponseDTO> {
+    const existingUser = await this.authRepository.findUserByEmail(loginDTO.email);
+    
+    if (existingUser) {
+      throw new Error('이미 존재하는 이메일입니다.');
+    }
+
+    const hashedPassword = await bcrypt.hash(loginDTO.password, 10);
+
+    const user = await this.authRepository.createUser({
+      email: loginDTO.email,
+      password: hashedPassword
+    });
+
+    const token = generateJWTToken({
+      id: user.id,
+      email: user.email
+    });
+
+    return {
+      id: user.id,
+      email: user.email,
+      token
+    };
+  }
+}
+
 
 // 세션 삭제
 export const clearSession = async (req: Request, res: Response, successMessage: string, snsLogoutUrl?: string) => {
@@ -60,7 +129,7 @@ export const logoutFromSNS = async (provider: string): Promise<string> => {
 };
 
 // 회원탈퇴
-export const deleteAccount = async (accessEmail: string, accessToken: string, provider: string): Promise<any> => {
+export const deleteAccount = async (accessEmail: string, accessToken: string, provider?: string): Promise<any> => {
     if (!accessEmail) throw new Error("User not authenticated.");
 
     const user = await prisma.user.findUnique({where: { email: accessEmail }});
@@ -81,6 +150,8 @@ export const deleteAccount = async (accessEmail: string, accessToken: string, pr
         headers: { "Content-Type": "application/x-www-form-urlencoded",},
         body: `grant_type=delete&client_id=${process.env.NAVER_CLIENT_ID}&client_secret=${process.env.NAVER_CLIENT_SECRET}&access_token=${accessToken}`
       });
+    } else if (provider === null){
+      await prisma.user.delete({ where: { id: user.id } });
     }
     // 2. 사용자 데이터 삭제
     await prisma.user.delete({ where: { id: user.id } });

@@ -1,11 +1,13 @@
 import cors from "cors";
 
+
 import dotenv from "dotenv";
 import express, { Request, Response, NextFunction } from "express";
 import { PrismaSessionStore } from "@quixo3/prisma-session-store";
 import session from "express-session";
 import passport from "passport";
 import cookieParser from "cookie-parser";
+import mongoose from 'mongoose';
 
 import kakaoRoutes from "./routes/kakaoRoutes.js";
 import googleRoutes from "./routes/googleRoutes.js";
@@ -45,6 +47,7 @@ import {
 dotenv.config();
 
 const app = express();
+const ec2ip = process.env.EC2_IP;
 const port = process.env.PORT;
 
 // 공통 응답 메서드 확장 미들웨어
@@ -84,7 +87,7 @@ app.use("/docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 // cors 방식 허용
 // Case1 'Access-Control-Allow-Origin' header..' 특정 프론트엔드 주소 허용 시 : {origin: ["<프론트엔드_주소_및_포트>"],} 처럼 설정해준다.
 // Case2 'Request header field x-auth-token..' 프론트 엔드에서 보내는 header 정보 확인 : {allowedHeaders: ["x-auth-token", ...],}
-app.use(cors());
+app.use(cors({ origin: ["http://${ec2ip}:3000"], allowedHeaders: ["Authorization"]}));
 
 app.use(express.static("public")); // 정적 파일 접근
 app.use(express.json()); // request의 본문을 json으로 해석할 수 있도록 함 (JSON 형태의 요청 body를 파싱하기 위함)
@@ -109,6 +112,19 @@ app.use(
     }),
   })
 );
+const MONGO_URI = process.env.MONGO_URI;
+if (!MONGO_URI) {
+  console.error("MONGO_URI 환경변수가 설정되어 있지 않습니다.");
+  process.exit(1);
+}
+
+mongoose.connect(MONGO_URI)
+  .then(() => {
+    console.log("MongoDB 연결 성공");
+  })
+  .catch((err) => {
+    console.error("MongoDB 연결 오류:", err);
+  });
 
 app.use(passport.initialize());
 app.use(passport.session());
