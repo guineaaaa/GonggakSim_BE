@@ -1,9 +1,14 @@
 import express, { Request, Response } from "express";
 import { verifyJWT } from "../middlewares/auth.middleware.js";
-import { logoutUser, deleteUserAccount, } from '../controllers/auth.controller.js';
+import { logoutUser, deleteUserAccount, AuthController } from '../controllers/auth.controller.js';
 import { updateAgreement } from '../controllers/consent.controller.js';
 
+
 const router = express.Router();
+const auth = new AuthController;
+
+router.post('/login', auth.login);
+router.post('/register', auth.register);
 
 // 미들웨어 토큰 검증 확인 라우터
 router.post("/verify-token", verifyJWT, async(req: Request, res: Response) => {

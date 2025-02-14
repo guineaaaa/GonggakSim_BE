@@ -12,6 +12,10 @@ await esbuild.build({
     keepNames: true,
     external: [
         'swagger-ui-express',
-        'yamljs'
-    ]
+        'yamljs',
+        'mock-aws-s3',
+        'aws-sdk',
+        'nock'
+    ],
+    loader: { '.html': 'text' }
 });
