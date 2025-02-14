@@ -1,6 +1,6 @@
 import { prisma } from "../db.config.js";
 import { Request, Response } from "express";
-import bcrypt from "bcrypt";
+import bcryptjs from "bcryptjs";
 import { AuthRepository } from "../repositories/auth.repository.js";
 import { LoginDTO, LoginResponseDTO } from "../dtos/auth.dto.js";
 import { generateJWTToken } from "../utils/jwt.utils.js";
@@ -49,7 +49,7 @@ export class AuthService {
       throw new Error("이메일/비밀번호로 로그인할 수 없는 계정입니다.");
     }
 
-    const isPasswordValid = await bcrypt.compare(
+    const isPasswordValid = await bcryptjs.compare(
       loginDTO.password,
       user.password
     );
@@ -79,7 +79,7 @@ export class AuthService {
       throw new Error("이미 존재하는 이메일입니다.");
     }
 
-    const hashedPassword = await bcrypt.hash(loginDTO.password, 10);
+    const hashedPassword = await bcryptjs.hash(loginDTO.password, 10);
 
     const user = await this.authRepository.createUser({
       email: loginDTO.email,
