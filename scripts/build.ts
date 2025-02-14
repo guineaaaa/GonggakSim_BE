@@ -15,8 +15,7 @@ await esbuild.build({
         'yamljs',
         'mock-aws-s3',
         'aws-sdk',
-        'nock',
-        '@mapbox/node-pre-gyp'
+        'nock'
     ],
     loader: { '.html': 'text' }
 }).catch(() => process.exit(1));
