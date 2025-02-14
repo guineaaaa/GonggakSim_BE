@@ -1,5 +1,6 @@
 import { findSchedulesByExamName } from "../repositories/schedule.repository.js";
 import { recommendScheduleDto } from "../dtos/schedule.dto.js";
+import { InvalidDataError } from "../errors.js";
 import OpenAIProvider from "../utils/openai.js";
 
 // 추천 일정 서비스 함수
@@ -21,7 +22,7 @@ export const recommendScheduleService = async (
 
     // 만약 시험 일정이 없다면 에러 처리
     if (!schedules || schedules.length === 0) {
-      throw new Error("No available schedules found for the specified exam.");
+      throw new InvalidDataError("데이터베이스에 시험 일정이 없습니다.", dto);
     }
 
     // AI를 통해 추천 일정을 받기
