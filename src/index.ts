@@ -1,11 +1,13 @@
 import cors from "cors";
 
+
 import dotenv from "dotenv";
 import express, { Request, Response, NextFunction } from "express";
 import { PrismaSessionStore } from "@quixo3/prisma-session-store";
 import session from "express-session";
 import passport from "passport";
 import cookieParser from "cookie-parser";
+import mongoose from 'mongoose';
 
 import kakaoRoutes from "./routes/kakaoRoutes.js";
 import googleRoutes from "./routes/googleRoutes.js";
@@ -110,6 +112,19 @@ app.use(
     }),
   })
 );
+const MONGO_URI = process.env.MONGO_URI;
+if (!MONGO_URI) {
+  console.error("MONGO_URI 환경변수가 설정되어 있지 않습니다.");
+  process.exit(1);
+}
+
+mongoose.connect(MONGO_URI)
+  .then(() => {
+    console.log("MongoDB 연결 성공");
+  })
+  .catch((err) => {
+    console.error("MongoDB 연결 오류:", err);
+  });
 
 app.use(passport.initialize());
 app.use(passport.session());

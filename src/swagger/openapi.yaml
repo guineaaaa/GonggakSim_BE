@@ -14,23 +14,28 @@ components:
       scheme: bearer
 
 paths:
-  /oauth2/refresh-token:
+  /oauth2/register:
     post:
-      summary: SNS 토큰 갱신 API
-      description: 만료된 액세스 토큰을 갱신합니다.
+      summary: 일반 회원가입 API
+      description: 사용자 회원가입
       tags:
         - OAuth
-      parameters:
-        - in: body
-          name: refreshToken
-          required: true
-          schema:
-            type: string
-      security:
-        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  example: "dlatnqls921@daum.net"
+                password:
+                  type: string
+                  example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6M......."
       responses:
         "200":
-          description: 토큰 갱신 성공
+          description: 로그인 성공
           content:
             application/json:
               schema:
@@ -40,23 +45,19 @@ paths:
                     type: boolean
                     example: true
                   message:
-                    type: string
-                    example: "토큰이 성공적으로 갱신되었습니다."
-        "404":
-          description: 인증 실패
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  success:
-                    type: boolean
-                    example: false
-                  message:
-                    type: string
-                    example: "인증이 필요합니다."
+                    type: object
+                    properties:
+                      id:
+                        type: number
+                        example: 1
+                      email:
+                        type: string
+                        example: "dlatnqls921@daum.net"
+                      token:
+                        type: string
+                        example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6M....."
         "400":
-          description: 토큰 갱신 실패
+          description: 로그인 에러
           content:
             application/json:
               schema:
@@ -67,7 +68,88 @@ paths:
                     example: false
                   message:
                     type: string
-                    example: "반환된 토큰이 없습니다."
+                    example: "이메일과 비밀번호 모두 입력해주세요."
+        "401":
+          description: 로그인 에러
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: "에러 메세지"
+  /oauth2/login:
+    post:
+      summary: 일반 로그인 API
+      description: 사용자 로그인 처리
+      tags:
+        - OAuth
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  example: "dlatnqls921@daum.net"
+                password:
+                  type: string
+                  example: "wbswbs9278"
+      responses:
+        "200":
+          description: 로그인 성공
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: object
+                    properties:
+                      id:
+                        type: number
+                        example: 1
+                      email:
+                        type: string
+                        example: "dlatnqls921@daum.net"
+                      token:
+                        type: string
+                        example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6M....."
+        "400":
+          description: 로그인 에러
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: "이메일과 비밀번호 모두 입력해주세요."
+        "401":
+          description: 로그인 에러
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: "에러 메세지"
 
   /oauth2/login/google:
     post:
@@ -219,7 +301,7 @@ paths:
       parameters:
         - in: query
           name: provider
-          required: true
+          required: false
           schema:
             type: string
       security:
@@ -260,7 +342,7 @@ paths:
       parameters:
         - in: query
           name: provider
-          required: true
+          required: false
           schema:
             type: string
       security:
@@ -298,9 +380,19 @@ paths:
       parameters:
         - in: query
           name: provider
-          required: true
+          required: false
           schema:
             type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                agreements:
+                  type: array
+                  example: [true, true, true]
       security:
         - BearerAuth: []
       responses:
@@ -339,7 +431,7 @@ paths:
       parameters:
         - in: query
           name: provider
-          required: true
+          required: false
           schema:
             type: string
       security:
@@ -433,7 +525,7 @@ paths:
       parameters:
         - in: query
           name: provider
-          required: true
+          required: false
           schema:
             type: string
       security:
@@ -502,7 +594,7 @@ paths:
       parameters:
         - in: query
           name: provider
-          required: true
+          required: false
           schema:
             type: string
       security:
@@ -561,7 +653,7 @@ paths:
       parameters:
         - in: query
           name: provider
-          required: true
+          required: false
           schema:
             type: string
       security:
@@ -630,7 +722,7 @@ paths:
       parameters:
         - in: query
           name: provider
-          required: true
+          required: false
           schema:
             type: string
       security:
@@ -671,7 +763,7 @@ paths:
       parameters:
         - in: query
           name: provider
-          required: true
+          required: false
           schema:
             type: string
       security:
@@ -764,7 +856,7 @@ paths:
       parameters:
         - in: query
           name: provider
-          required: true
+          required: false
           schema:
             type: string
       security:
@@ -805,7 +897,7 @@ paths:
       parameters:
         - in: query
           name: provider
-          required: true
+          required: false
           schema:
             type: string
         - in: path
@@ -851,7 +943,7 @@ paths:
       parameters:
         - in: query
           name: provider
-          required: true
+          required: false
           schema:
             type: string
         - in: path
@@ -897,7 +989,7 @@ paths:
       parameters:
         - in: query
           name: provider
-          required: true
+          required: false
           schema:
             type: string
         - in: path
@@ -977,7 +1069,7 @@ paths:
       parameters:
         - in: query
           name: provider
-          required: true
+          required: false
           schema:
             type: string
         - in: path
@@ -1023,7 +1115,7 @@ paths:
       parameters:
         - in: query
           name: provider
-          required: true
+          required: false
           schema:
             type: string
         - in: path
@@ -1071,7 +1163,7 @@ paths:
       parameters:
         - in: query
           name: provider
-          required: true
+          required: false
         - in: query
           name: query
           required: true
@@ -1151,7 +1243,7 @@ paths:
       parameters:
         - in: query
           name: provider
-          required: true
+          required: false
           schema:
             type: string
       security:
@@ -1325,7 +1417,7 @@ paths:
       parameters:
         - in: query
           name: provider
-          required: true
+          required: false
           schema:
             type: string
       security:
@@ -1413,7 +1505,7 @@ paths:
       parameters:
         - in: query
           name: provider
-          required: true
+          required: false
           schema:
             type: string
       security:
@@ -1541,7 +1633,7 @@ paths:
       parameters:
         - in: query
           name: provider
-          required: true
+          required: false
           schema:
             type: string
         - in: query
@@ -1638,7 +1730,7 @@ paths:
       parameters:
         - in: query
           name: provider
-          required: true
+          required: false
           schema:
             type: string
         - in: path

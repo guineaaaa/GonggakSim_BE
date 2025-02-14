@@ -83,7 +83,7 @@ export const getUserPage = async (req: Request, res: Response) => {
       select: { category: true },
     });
 
-    // 3. 가장 임박한 시험 2개 조회
+    // 3. 가장 임박한 시험 3개 조회
     const closestExams = await getClosestExams(userInfo.id);
 
     // 응답 데이터 구성
