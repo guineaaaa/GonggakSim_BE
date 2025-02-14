@@ -2,7 +2,7 @@
 export const mapQueryToCertificationSearch = (query: any) => {
   return {
     query: query.query as string,
-    category: query.category as string | undefined,
+    category: query.category ? query.category : "전체",
   };
 };
 
