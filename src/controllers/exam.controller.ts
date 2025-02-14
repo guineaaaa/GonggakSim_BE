@@ -24,7 +24,11 @@ export const handleAddExam = async (
       data: exam,
     });
   } catch (error) {
-    next(error);
+    console.error("캘린더 시험 추가 에러: ", error);
+    res.status(500).json({
+      success: false,
+      message: "서버 내부 에러",
+    });
   }
 };
 
@@ -53,7 +57,11 @@ export const handleGetExam = async (
       data: exams,
     });
   } catch (error) {
-    next(error);
+    console.error("캘린더 시험 조회 에러: ", error);
+    res.status(500).json({
+      success: false,
+      message: "서버 내부 에러",
+    });
   }
 };
 
@@ -83,7 +91,11 @@ export const handleDeleteExam = async (
       message: "Exam deleted successfully",
     });
   } catch (error) {
-    next(error);
+    console.error("캘린더 시험 삭제 에러: ", error);
+    res.status(500).json({
+      success: false,
+      message: "서버 내부 에러",
+    });
   }
 };
 
@@ -135,7 +147,9 @@ export const handleAddExamByCertificationSchedule = async (
       where: {
         userId,
         title: certification.name,
-        examStart: schedule.examStart ? new Date(schedule.examStart) : new Date(),
+        examStart: schedule.examStart
+          ? new Date(schedule.examStart)
+          : new Date(),
       },
     });
 
@@ -152,7 +166,9 @@ export const handleAddExamByCertificationSchedule = async (
       data: {
         userId,
         title: certification.name,
-        examStart: schedule.examStart ? new Date(schedule.examStart) : new Date(),
+        examStart: schedule.examStart
+          ? new Date(schedule.examStart)
+          : new Date(),
         examEnd: schedule.examEnd ? new Date(schedule.examEnd) : null,
         remindState: false,
       },

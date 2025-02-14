@@ -21,6 +21,9 @@ export const findCertifications = async (query: string, category?: string) => {
       name: true,
       category: true,
     },
+    orderBy: {
+      name: "asc",
+    },
   });
 
   return certifications;

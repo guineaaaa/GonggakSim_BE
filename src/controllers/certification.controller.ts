@@ -30,7 +30,7 @@ export const handleGetCertifications = async (
     // category가 없다면
     const certifications = await searchCertifications({
       query,
-      category: category ?? undefined,
+      category: category ?? "전체",
     });
 
     const data = responseFromCertifications(certifications);
@@ -38,6 +38,10 @@ export const handleGetCertifications = async (
     console.log("컨트롤러에서 자격증", JSON.stringify(data, null, 2));
     res.status(StatusCodes.OK).json({ success: true, data });
   } catch (error) {
-    next(error);
+    console.error("자격증 검색 에러: ", error);
+    res.status(500).json({
+      success: false,
+      message: "서버 내부 에러",
+    });
   }
 };
