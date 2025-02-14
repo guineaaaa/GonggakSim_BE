@@ -73,7 +73,7 @@ export class AuthController {
     try {
       const registerDTO = req.body;
 
-      if (!registerDTO.email || !registerDTO.password || !registerDTO.name) {
+      if (!registerDTO.email || !registerDTO.password) {
         return res.status(400).json({ success: false, message: '모든 필드를 입력해주세요.' });
       }
 

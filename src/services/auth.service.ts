@@ -64,12 +64,11 @@ export class AuthService {
     return {
       id: user.id,
       email: user.email,
-      name: user.name,
       token
     };
   }
 
-  async register(loginDTO: LoginDTO & { name: string }): Promise<LoginResponseDTO> {
+  async register(loginDTO: LoginDTO): Promise<LoginResponseDTO> {
     const existingUser = await this.authRepository.findUserByEmail(loginDTO.email);
     
     if (existingUser) {
@@ -80,8 +79,7 @@ export class AuthService {
 
     const user = await this.authRepository.createUser({
       email: loginDTO.email,
-      password: hashedPassword,
-      name: loginDTO.name
+      password: hashedPassword
     });
 
     const token = generateJWTToken({
@@ -92,7 +90,6 @@ export class AuthService {
     return {
       id: user.id,
       email: user.email,
-      name: user.name,
       token
     };
   }

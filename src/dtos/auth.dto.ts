@@ -7,6 +7,5 @@ export interface LoginDTO {
   export interface LoginResponseDTO {
     id: number;
     email: string;
-    name: string;
     token: string;
   }
