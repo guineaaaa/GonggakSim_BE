@@ -47,25 +47,38 @@ jobs:
           ssh ggs 'sudo chown ubuntu:ubuntu /opt/app'
           scp -r ./[!.]* ggs:/opt/app
 
-      - name: Install dependencies and PM2
+      - name: Install dependencies
         run: |
           ssh ggs 'cd /opt/app; npm install'
           ssh ggs 'cd /opt/app; npm install @esbuild/linux-x64'
-          ssh ggs 'cd /opt/app; npm install -g pm2'
-          if [[ "${{ steps.prisma_filter.outputs.prisma }}" == "true" ]]; then
           ssh ggs 'cd /opt/app; npm exec prisma generate'
-          fi
           ssh ggs 'cd /opt/app; npm run build'
 
       - name: Apply Prisma schema
         run: |
           ssh ggs 'cd /opt/app; npm exec prisma db push'
 
-      - name: Restart Application with PM2
+      - name: Copy systemd service file
         run: |
           ssh ggs '
-            cd /opt/app;
-            pm2 stop my-app || true;
-            pm2 start index.js --name my-app;
-            pm2 save;
+            echo "[Unit]
+            Description=Gongaksim Project
+            After=network.target
+
+            [Service]
+            User=${USER}
+            ExecStart=/usr/bin/npm run start --prefix /opt/app/
+            Restart=always
+
+            [Install]
+            WantedBy=multi-user.target" | sudo tee /etc/systemd/system/app.service
           '
+
+      - name: Enable systemd service
+        run: |
+          ssh ggs 'sudo systemctl daemon-reload'
+          ssh ggs 'sudo systemctl enable app'
+
+      - name: Restart systemd service
+        run: |
+          ssh ggs 'sudo systemctl restart app'
