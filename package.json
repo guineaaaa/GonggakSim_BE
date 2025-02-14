@@ -7,6 +7,7 @@
   "scripts": {
     "prebuild": "npm install @esbuild/linux-x64",
     "build": "tsx scripts/build.ts",
+    "postbuild": "cp package.json dist/",
     "start": "node dist/index.cjs",
     "api-docs": "swagger-cli bundle ./src/swagger/openapi.yaml --outfile build/swagger.yaml --type yaml",
     "predev": "npm run api-docs",
