@@ -102,13 +102,13 @@ export class SuggestionService {
   }
 }
 
-// 마이페이지 조회
+/** 가장 임박한 시험 최대 3개 조회 */
 export const getClosestExams = async (userId: number): Promise<any[]> => {
   const currentDate = new Date();
   const exams = await prisma.exam.findMany({
     where: { userId, examStart: { gte: currentDate } },
     orderBy: { examStart: "asc" },
-    take: 2,
+    take: 3,
   });
 
   return exams.map((exam) => ({
@@ -121,7 +121,7 @@ export const getClosestExams = async (userId: number): Promise<any[]> => {
 };
 
 
-// 사용자 닉네임 수정/저장
+/** 사용자 닉네임 수정/저장 */
 const isValidNickname = (nickname: string): boolean => {
   const nicknameRegex = /^[가-힣a-zA-Z]{2,10}$/; // 한글/영문 (2~10자)
   return nicknameRegex.test(nickname);
