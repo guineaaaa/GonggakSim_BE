@@ -12,7 +12,7 @@ components:
       type: http
       scheme: bearer
 paths:
-  /oauth/register:
+  /oauth2/register:
     post:
       summary: 일반 회원가입 API
       description: 사용자 회원가입
@@ -80,7 +80,7 @@ paths:
                   message:
                     type: string
                     example: 에러 메세지
-  /oauth/login:
+  /oauth2/login:
     post:
       summary: 일반 로그인 API
       description: 사용자 로그인 처리
@@ -98,7 +98,7 @@ paths:
                   example: dlatnqls921@daum.net
                 password:
                   type: string
-                  example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6M.......
+                  example: wbswbs9278
       responses:
         '200':
           description: 로그인 성공
@@ -379,6 +379,19 @@ paths:
           required: false
           schema:
             type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                agreements:
+                  type: array
+                  example:
+                    - true
+                    - true
+                    - true
       security:
         - BearerAuth: []
       responses:

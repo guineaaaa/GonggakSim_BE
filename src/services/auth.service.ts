@@ -3,7 +3,6 @@ import { Request, Response } from 'express';
 import bcrypt from "bcrypt";
 import { AuthRepository } from '../repositories/auth.repository.js';
 import { LoginDTO, LoginResponseDTO } from '../dtos/auth.dto.js';
-import { refreshKakaoToken, refreshNaverToken } from '../utils/auth.utils.js';
 import { generateJWTToken } from '../utils/jwt.utils.js';
 
 // // 토큰 갱신
@@ -30,7 +29,7 @@ import { generateJWTToken } from '../utils/jwt.utils.js';
 //     return newOAuthAccessToken;
 // }
 
-// 로그인
+// 로그인, 회원가입
 export class AuthService {
   private authRepository: AuthRepository;
 
@@ -130,7 +129,7 @@ export const logoutFromSNS = async (provider: string): Promise<string> => {
 };
 
 // 회원탈퇴
-export const deleteAccount = async (accessEmail: string, accessToken: string, provider: string): Promise<any> => {
+export const deleteAccount = async (accessEmail: string, accessToken: string, provider?: string): Promise<any> => {
     if (!accessEmail) throw new Error("User not authenticated.");
 
     const user = await prisma.user.findUnique({where: { email: accessEmail }});
@@ -151,6 +150,8 @@ export const deleteAccount = async (accessEmail: string, accessToken: string, pr
         headers: { "Content-Type": "application/x-www-form-urlencoded",},
         body: `grant_type=delete&client_id=${process.env.NAVER_CLIENT_ID}&client_secret=${process.env.NAVER_CLIENT_SECRET}&access_token=${accessToken}`
       });
+    } else if (provider === null){
+      await prisma.user.delete({ where: { id: user.id } });
     }
     // 2. 사용자 데이터 삭제
     await prisma.user.delete({ where: { id: user.id } });
