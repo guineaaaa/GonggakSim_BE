@@ -83,7 +83,7 @@ export const kakaoStrategy = new KakaoStrategy(
     callbackURL: "/oauth2/login/kakao/callback",
   },
   async (accessToken, refreshToken, profile, cb) => {
-    try {
+  try {
       const user = await kakaoVerify(accessToken, refreshToken, profile);
       cb(null, user);
     } catch (err) {
@@ -105,16 +105,16 @@ const kakaoVerify = async (
   let user = await prisma.user.findFirst({ where: { email, oauthProvider: "kakao" }});
 
   // 신규 사용자 여부 확인
-  const isNewUser = !user;
+    const isNewUser = !user;
 
-  if (!user) {
+    if (!user) {
     // 신규 사용자라면 User테이블에 저장
-    user = await prisma.user.create({
-      data: {
+      user = await prisma.user.create({
+        data: {
         email: email || "ggs_email",
         name: profile.displayName || "ggs_user",
         profileImage: profileImg,
-        oauthProvider: "kakao",
+          oauthProvider: "kakao",
         oauthRefreshToken: refreshToken,
       },
     });
@@ -124,16 +124,16 @@ const kakaoVerify = async (
       where: { email, oauthProvider: "kakao" },
       data: {
         oauthRefreshToken: refreshToken,
-      },
-    });
-  }
+        },
+      });
+    }
 
-  return {
-    id: user.id,
+    return {
+      id: user.id,
     email,
     accessToken,
     refreshToken,
-    oauthProvider: user.oauthProvider,
+      oauthProvider: user.oauthProvider,
     isNewUser
   };
 };
@@ -146,7 +146,7 @@ export const naverStrategy = new NaverStrategy(
     callbackURL: "/oauth2/login/naver/callback",
   },
   async (accessToken, refreshToken, profile, cb) => {
-    try {
+  try {
       const user = await naverVerify(accessToken, refreshToken, profile);
       cb(null, user);
     } catch (err) {
@@ -167,16 +167,16 @@ const naverVerify = async (
   let user = await prisma.user.findFirst({ where: { email, oauthProvider: "naver" }});
 
   // 신규 사용자 여부 확인
-  const isNewUser = !user;
+    const isNewUser = !user;
 
-  if (!user) {
+    if (!user) {
     // 신규 사용자라면 User테이블에 저장
-    user = await prisma.user.create({
-      data: {
+      user = await prisma.user.create({
+        data: {
         email: email || "ggs_email",
         name: profile._json.nickname || "ggs_user",
         profileImage: profile._json.profile_image || null,
-        oauthProvider: "naver",
+          oauthProvider: "naver",
         oauthRefreshToken: refreshToken,
       },
     });
@@ -186,16 +186,16 @@ const naverVerify = async (
       where: { email, oauthProvider: "naver" },
       data: {
         oauthRefreshToken: refreshToken,
-      },
-    });
-  }
+        },
+      });
+    }
 
-  return {
-    id: user.id,
+    return {
+      id: user.id,
     email,
     accessToken,
     refreshToken,
-    oauthProvider: user.oauthProvider,
+      oauthProvider: user.oauthProvider,
     isNewUser
   };
 };

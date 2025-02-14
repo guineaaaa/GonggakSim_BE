@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
-import { logoutFromSNS, deleteAccount, clearSession } from '../services/auth.service.js';
+import { logoutFromSNS, deleteAccount, clearSession, AuthService } from '../services/auth.service.js';
+import { LoginDTO } from '../dtos/auth.dto.js';
 import { AuthRequest } from "../middlewares/auth.middleware.js";
-import { StatusCodes } from 'http-status-codes';
 
 // // 토큰 갱신 controller
 // export const refreshUserToken = async (req: Request, res: Response) => {
@@ -43,6 +43,50 @@ import { StatusCodes } from 'http-status-codes';
 //         });
 //     }
 // }
+
+// 로그인 controller
+export class AuthController {
+  private authService: AuthService;
+
+  constructor() {
+    this.authService = new AuthService();
+  }
+
+  login = async (req: Request, res: Response): Promise<any> => {
+    try {
+      const loginDTO: LoginDTO = req.body;
+
+      if (!loginDTO.email || !loginDTO.password) {
+        return res.status(400).json({ success : false, message: '이메일과 비밀번호를 모두 입력해주세요.' });
+      }
+
+      const result = await this.authService.login(loginDTO);
+      
+      return res.status(200).json({ success: true, masseage: result });
+    } catch (error) {
+      console.error('Login error:', error);
+      return res.status(401).json({ success: false, message: error });
+    }
+  };
+
+  register = async (req: Request, res: Response): Promise<any> => {
+    try {
+      const registerDTO = req.body;
+
+      if (!registerDTO.email || !registerDTO.password) {
+        return res.status(400).json({ success: false, message: '모든 필드를 입력해주세요.' });
+      }
+
+      const result = await this.authService.register(registerDTO);
+      
+      return res.status(200).json({ success: true, message: result });
+    } catch (error) {
+      console.error('Register error:', error);
+      return res.status(400).json({ success: false, message: error });
+    }
+  };
+}
+
 
 // 로그아웃 controller
 export const logoutUser = async (req: Request, res: Response) => {
