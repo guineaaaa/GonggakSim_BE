@@ -7,6 +7,7 @@
   "scripts": {
     "prebuild": "npm install @esbuild/linux-x64",
     "build": "tsx scripts/build.ts",
+    "postbuild": "cp package.json dist/",
     "start": "node dist/index.cjs",
     "api-docs": "swagger-cli bundle ./src/swagger/openapi.yaml --outfile build/swagger.yaml --type yaml",
     "predev": "npm run api-docs",
@@ -18,6 +19,7 @@
   "dependencies": {
     "@prisma/client": "^6.3.1",
     "@quixo3/prisma-session-store": "^3.1.13",
+    "autocannon": "^8.0.0",
     "axios": "^1.7.9",
     "bcrypt": "^5.1.1",
     "cookie-parser": "^1.4.7",

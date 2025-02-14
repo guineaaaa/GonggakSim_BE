@@ -18,7 +18,7 @@ export const addExamService = async (data: Exam) => {
     const fetchedToken = await getUserFcmToken(data.userId);
 
     // FCM 토큰 업데이트 (기존과 다를때만)
-    if (fetchedToken) {
+    if (fetchedToken && fetchedToken !== data.fcmToken) {
       data.fcmToken = fetchedToken;
 
       await prisma.user.update({

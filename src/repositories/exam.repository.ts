@@ -34,19 +34,26 @@ export const getExamsByUserId = async (userId: number) => {
 
 // 시험 삭제
 export const deleteExam = async (examId: number, userId: number) => {
-  const deletedExam = await prisma.exam.deleteMany({
+  const deletedExam = await prisma.exam.delete({
     where: {
       id: examId,
       userId: userId, // 사용자의 시험인지 확인
     },
   });
-  return deletedExam.count > 0; // 삭제된 레코드가 있는지 확인
+  return deletedExam;
 };
 
-
 // 새로운 시험 추가 (기존 addExam 재사용)
-export const addExamWithSchedule = async (userId: number, certificationId: number, scheduleId: number): Promise<number> => {
-  console.log("addExamWithSchedule 호출:", { userId, certificationId, scheduleId });
+export const addExamWithSchedule = async (
+  userId: number,
+  certificationId: number,
+  scheduleId: number
+): Promise<number> => {
+  console.log("addExamWithSchedule 호출:", {
+    userId,
+    certificationId,
+    scheduleId,
+  });
 
   // Certification에서 name 가져오기
   const certification = await prisma.certification.findUnique({
@@ -77,7 +84,7 @@ export const addExamWithSchedule = async (userId: number, certificationId: numbe
       examEnd: schedule.examEnd ? new Date(schedule.examEnd) : null, // null 허용
       remindState: false, // 기본값 false
     },
-  });  
+  });
 
   return createdExam.id;
 };
