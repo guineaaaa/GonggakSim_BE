@@ -15,7 +15,6 @@ export const handleAddExam = async (
   res: Response,
   next: NextFunction
 ) => {
-  console.log("사용자 캘린더 시험 추가 요청");
   try {
     const examData = bodyToExam(req.body);
     const exam = await addExamService(examData);
@@ -38,7 +37,6 @@ export const handleGetExam = async (
   res: Response,
   next: NextFunction
 ): Promise<void> => {
-  console.log("사용자 캘린더 시험 조회 요청");
 
   try {
     const userId = Number(req.query.userId); // 쿼리 파라미터에서 userId 추출
@@ -71,7 +69,6 @@ export const handleDeleteExam = async (
   res: Response,
   next: NextFunction
 ): Promise<void> => {
-  console.log("사용자 캘린더 시험 삭제 요청");
 
   try {
     const examId = Number(req.params.examId); // url 파라미터에서 시험 id 추출

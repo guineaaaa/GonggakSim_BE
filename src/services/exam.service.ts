@@ -14,7 +14,6 @@ import { InvalidDataError } from "../errors.js";
 export const addExamService = async (data: Exam) => {
   // FCM 토큰 처리
   if (!data.fcmToken) {
-    // data.fcmToken = await getUserFcmToken(data.userId);
     const fetchedToken = await getUserFcmToken(data.userId);
 
     // FCM 토큰 업데이트 (기존과 다를때만)
