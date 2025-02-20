@@ -8,8 +8,6 @@ export const handleDnDNotification = async (
   res: Response,
   next: NextFunction
 ): Promise<void> => {
-  console.log("방해 금지 시간 알림 설정");
-
   const notificationService = new NotificationService();
 
   try {
@@ -30,7 +28,6 @@ export const handleDnDNotification = async (
       message: "Notification settings saved successfully",
       data: result,
     });
-    console.log(data);
   } catch (error: any) {
     console.error("에러 발생:", error);
     next(error);

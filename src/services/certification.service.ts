@@ -18,7 +18,6 @@ export const searchCertifications = async ({
     searchQuery,
     searchCategory ?? undefined
   );
-  console.log("서비스에서 자격증: ");
-  console.log(certifications);
+
   return responseFromCertifications(certifications);
 };

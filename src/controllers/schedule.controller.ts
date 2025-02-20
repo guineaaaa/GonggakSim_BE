@@ -11,9 +11,6 @@ export const handleRecommendSchedule = async (
   res: Response,
   next: NextFunction
 ) => {
-  console.log("AI 시험 일정 추천 함수 호출");
-  console.log("body: ", req.body);
-
   try {
     // 요청 본문을 DTO로 변환
     const dto = recommendScheduleDto(req.body);
