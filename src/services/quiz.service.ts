@@ -1,7 +1,6 @@
 import { QuizRepository } from "../repositories/quiz.repository.js";
 
 const repository = new QuizRepository();
-const SUBJECT_OPTIONAL_CERTIFICATIONS = ["TOEIC", "한국사능력검정시험 심화", "한국사능력검정시험 기본", "정보처리기사 필기"];
 
 export class QuizService {
   async getQuizzesByCertificationAndType(
@@ -19,12 +18,6 @@ export class QuizService {
           certificationName: certificationNames[0], // ✅ 응시하는 자격증 이름 반환
           message: "시험이 얼마 남지 않았어요!",
         };
-      }
-
-      // ✅ 특정 자격증이면 subjects를 강제로 "1과목"으로 변경
-      if (certificationNames.some(cert => SUBJECT_OPTIONAL_CERTIFICATIONS.includes(cert))) {
-        console.log(`🔹 ${certificationNames}는 특정 자격증이므로 "1과목"으로 변경`);
-        subjects = ["1과목"];
       }
 
       // ✅ 랜덤 선택된 `selectedQuizType`으로 퀴즈 조회
