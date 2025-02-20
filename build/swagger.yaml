@@ -5,7 +5,7 @@ info:
   description: 공각심 API 문서
 servers:
   - url: 'http://localhost:3000/'
-  - url: 'http://13.125.231.189:3000/'
+  - url: 'http://13.209.11.7:3000/'
 components:
   securitySchemes:
     BearerAuth:
