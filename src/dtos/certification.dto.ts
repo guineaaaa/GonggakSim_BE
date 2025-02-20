@@ -1,4 +1,3 @@
-// 요청에서 받아온 데이터를 DTO로 매핑
 export const mapQueryToCertificationSearch = (query: any) => {
   return {
     query: query.query as string,
@@ -6,7 +5,7 @@ export const mapQueryToCertificationSearch = (query: any) => {
   };
 };
 
-// 자격증 데이터를 응답 형식으로 변환
+
 export const responseFromCertification = (certification: any) => {
   return {
     id: certification.id,
@@ -15,7 +14,7 @@ export const responseFromCertification = (certification: any) => {
   };
 };
 
-// 자격증 목록 데이터를 응답 형식으로 변환
+
 export const responseFromCertifications = (certifications: any[]) => {
   return certifications.map(responseFromCertification);
 };

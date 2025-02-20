@@ -1,4 +1,3 @@
-//certification2.controller.ts
 import { Request, Response, NextFunction } from "express";
 import { StatusCodes } from "http-status-codes";
 import { responseFromCertificationSummary, responseFromCertification } from "../dtos/certificateInquiry.dto.js";
@@ -6,7 +5,7 @@ import { CertificationService } from "../services/certificateInquiry.service.js"
 
 const service = new CertificationService();
 
-// GET: 전체 자격증 목록 (요약 정보만 제공)
+// 전체 자격증 목록 조회
 export const handleGetAllCertifications = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   console.log("전체 자격증 요약 조회 요청");
 
@@ -29,7 +28,7 @@ export const handleGetAllCertifications = async (req: Request, res: Response, ne
   }
 };
 
-// GET: 카테고리별 자격증 조회 (요약 정보만 제공)
+// 카테고리별 자격증 조회 
 export const handleGetCertificationsByCategory = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   console.log("카테고리별 자격증 조회 요청");
 
@@ -61,7 +60,7 @@ export const handleGetCertificationsByCategory = async (req: Request, res: Respo
   }
 };
 
-// GET: 자격증 상세 조회
+// 자격증 상세 조회
 export const handleGetCertificationById = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   console.log("자격증 상세 조회 요청");
 

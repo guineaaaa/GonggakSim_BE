@@ -1,8 +1,6 @@
-	//certification2.repository.ts
 	import { prisma } from "../db.config.js";
 	
 	export class CertificationRepository {
-	  // 요약 정보 조회
 	  async findAllSummaries() {
 	    return prisma.certification.findMany({
 	      select: {
