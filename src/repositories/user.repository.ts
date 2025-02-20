@@ -123,16 +123,6 @@ export class SuggestionRepository {
     });
   }
 
-  // static async findSimilarUsersCertifications(userInfo: UserWithDetails) {
-  //   const categoryNames = userInfo.users.map((uc) => uc.category.name);
-    
-  //   return prisma.certification.findMany({
-  //     where: { 
-  //       category: { in: categoryNames },
-  //     },
-  //     take: 3,
-  //   });
-  // }
 
   // 신규 사용자와 일치하는 사용자가 없다면, 랜덤으로 certification에서 자동 3개 추천
   static async findDefaultCertificationsByCategory(categoryNames: string[]) {
