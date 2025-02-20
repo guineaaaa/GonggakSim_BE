@@ -13,6 +13,11 @@ export const updateConsent = async (
     employCategory: string;
   }
 ) => {
+
+  if (data.age < 18 && data.age > 36) {
+    throw new Error("18세 미만, 36세 이상은 가입 불가능합니다.");
+  }
+
   // 먼저 기존 UserCategory 관계를 삭제 (중복 방지)
   await prisma.userCategory.deleteMany({
     where: { userId },
