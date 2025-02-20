@@ -31,12 +31,12 @@ export class SuggestionService {
 
       if (!users || users.length < 1) {
         console.log("사용자가 카테고리를 선택하지 않았습니다.");
-        return await this.getDefaultRecommendations(userInfo);
+        return await this.getNoCategoryRecommend(userInfo);
       }
 
       const similarUsers = await this.findSimilarUsers(userInfo);
 
-      if (similarUsers.length > 0) {
+      if (Array.isArray(similarUsers) && similarUsers.length > 0) {
         // 유사 사용자들의 exam 제목 추출 (중복 제거)
         const examTitlesSet = new Set<string>();
         similarUsers.forEach(({ user }) => {
@@ -44,19 +44,34 @@ export class SuggestionService {
             examTitlesSet.add(exam.title);
           });
         });
+
         const examTitles = Array.from(examTitlesSet);
-  
+
+        // 만약 추출된 exam 제목이 없으면 기본 추천 호출
+        if (examTitles.length === 0) {
+          return await this.getDefaultRecommendations(userInfo);
+        }
+
         // exam 제목과 Certification.name이 일치하는 자격증 조회
         const recommendedCertifications = await SuggestionRepository.getCertificationsByExamTitles(examTitles);
+
+        // 만약 추천된 자격증이 없으면 기본 추천 호출
+        if (!recommendedCertifications || recommendedCertifications.length === 0) {
+          return await this.getDefaultRecommendations(userInfo);
+        }
+
         return this.mapToDto(recommendedCertifications);
       }
-  
+
+      // 유사 사용자가 없는 경우 기본 추천 실행
       return await this.getDefaultRecommendations(userInfo);
+
     } catch (error) {
       console.error("추천 생성 중 오류:", error);
       throw error;
     }
   }
+
 
 
   // 유사 사용자 찾기: 전체 사용자 중에서 현재 사용자와의 유사도 계산
@@ -111,6 +126,26 @@ export class SuggestionService {
       name: cert.name,
       category: cert.category,
     })).slice(0, 3);
+  }
+
+  // 카테고리 없는 경우
+  private static async getNoCategoryRecommend(userInfo: UserWithDetails): Promise<SuggestInfoDto[]> {
+    // 지정된 자격증 ID 목록
+    const defaultCertificationIds = [1, 8, 27]; // TOEIC, 컴퓨터활용능력 1급 필기, 테셋
+  
+    const defaultCertifications = await prisma.certification.findMany({
+      where: { 
+        id: { in: defaultCertificationIds },
+      },
+      select: {
+        id: true,
+        name: true,
+        category: true,
+      },
+      orderBy: { id: 'asc' },
+    });
+  
+    return this.mapToDto(defaultCertifications);
   }
 }
 
