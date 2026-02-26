@@ -1,8 +1,16 @@
-# 🔔 공각심 
+# 🔔 공각심 : 당신의 학습에 경각심을 불러일으키다
 <img with="800" src="https://github.com/user-attachments/assets/81bbb2fa-eafd-4689-b84e-42a9b819c13a">
+<aside>
+
+> 📆 맞춤 일정과 랜덤 알림으로 학습 경각심을 일깨우다
+> 공각심은 20~30대 대학생과 구직자를 대상으로,
+자격증/시험 일정 관리와 학습 동기(경각심)를 부여하는 것을 목표로 기획된 서비스입니다.
+> 
+</aside>
 
 <br/>
 <br/>
+<img src="https://github.com/user-attachments/assets/eba1ba02-ecd9-4261-bb83-42bf2b440b43" />
 
 ## Member
 | 이름 | 담당 기능 |
